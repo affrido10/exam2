@@ -185,6 +185,17 @@
       const dialog = document.getElementById('modalDialog');
       if(dialog) dialog.focus();
     }
+    function showEasterEgg() {
+      modalContent.innerHTML = `
+        <div class="flex flex-col items-center justify-center">
+          <img src="https://cataas.com/cat/says/Мяу?width=320&height=220&fontSize=32" alt="Котик" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;">
+          <div class="text-lg font-bold mb-2">Пасхалка!</div>
+          <div class="text-base text-center">Вот тебе котик для настроения 🐾</div>
+        </div>`;
+      modalOverlay.classList.add('active');
+      setTimeout(()=>{modalDialogFocus();},10);
+      document.body.style.overflow = 'hidden';
+    }
     // --- Search ---
     function renderResults(list, query) {
       resultsContainer.innerHTML = '';
@@ -213,6 +224,11 @@
     }
     function doSearch(query) {
       if (!ticketsData.length) return;
+      if (query && query.toLowerCase().includes('котик')) {
+        showEasterEgg();
+        searchInput.value = '';
+        return;
+      }
       if (!query) {
         filtered = [];
         resultsContainer.innerHTML = '';
