@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketsFinder — поиск ответов на билеты</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .search-container {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        .ticket-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .ticket-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .no-results {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        /* ====== DARK THEME ====== */
+        body.dark {
+            background: #18181b;
+        }
+        body.dark .search-container {
+            background: linear-gradient(135deg, #232046 0%, #3b2f5e 100%);
+        }
+        body.dark .ticket-card {
+            background: #23232b !important;
+            border-color: #2d2d36 !important;
+            color: #e5e7eb;
+        }
+        body.dark .ticket-card:hover {
+            box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+        }
+        body.dark .no-results {
+            background: linear-gradient(135deg, #23232b 0%, #18181b 100%);
+        }
+        body.dark .text-gray-800, body.dark .text-gray-700, body.dark .text-gray-600 {
+            color: #e5e7eb !important;
+        }
+        body.dark .bg-white {
+            background: #23232b !important;
+        }
+        body.dark .bg-indigo-100 {
+            background: #312e81 !important;
+            color: #a5b4fc !important;
+        }
+        body.dark .border-gray-200 {
+            border-color: #2d2d36 !important;
+        }
+        body.dark .text-indigo-800 {
+            color: #a5b4fc !important;
+        }
+        body.dark .text-gray-400 {
+            color: #a1a1aa !important;
+        }
+        body.dark .text-indigo-600 {
+            color: #818cf8 !important;
+        }
+        body.dark .text-indigo-700 {
+            color: #6366f1 !important;
+        }
+        body.dark .bg-gray-100 {
+            background: #23232b !important;
+        }
+        body.dark .border-gray-200 {
+            border-color: #23232b !important;
+        }
+        body.dark .focus\:ring-indigo-400:focus {
+            box-shadow: 0 0 0 2px #6366f1;
+        }
+        body, .search-container, .ticket-card, .no-results, .bg-white, .bg-indigo-100, .border-gray-200, .text-gray-800, .text-gray-700, .text-gray-600, .text-indigo-800, .text-gray-400, .text-indigo-600, .text-indigo-700, .bg-gray-100 {
+            transition: background 0.5s cubic-bezier(0.4,0,0.2,1), color 0.5s cubic-bezier(0.4,0,0.2,1), border-color 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4,0,0.6,1) infinite;
+        }
+        .bg-gray-200 {
+            background: #e5e7eb !important;
+        }
+        body.dark .bg-gray-200 {
+            background: #23232b !important;
+        }
+        .bg-indigo-100 {
+            background: #e0e7ff !important;
+        }
+        body.dark .bg-indigo-100 {
+            background: #312e81 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-end mb-4">
+            <button id="themeToggle" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                <i class="fas fa-moon"></i>
+                <span>Тёмная тема</span>
+            </button>
+        </div>
+
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
+                <span class="text-indigo-600">Tickets</span>Finder
+            </h1>
+            <p class="text-gray-600 text-lg">Найдите ответы на экзаменационные билеты</p>
+        </header>
+
+        <!-- Search Section -->
+        <div class="search-container rounded-xl p-6 mb-10 text-white">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-4">Поиск ответа на билет</h2>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Введите номер билета или ключевые слова..." 
+                        class="w-full px-5 py-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    >
+                    <button 
+                        id="searchButton"
+                        class="absolute right-2 top-2 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg transition duration-200"
+                    >
+                        <i class="fas fa-search"></i> Найти
+                    </button>
+                </div>
+                <div class="mt-3 flex items-center text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span>Попробуйте ввести номер билета (например, "Билет 12") или тему вопроса</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="mb-10">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                <span id="resultsCount" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full mr-2">0</span>
+                Найдено ответов
+            </h3>
+
+            <!-- Loading State (Skeletons) -->
+            <div id="skeletonState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6 hidden">
+                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
+                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
+                        </div>
+                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
+                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse hidden md:block">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
+                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
+                        </div>
+                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
+                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse hidden lg:block">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
+                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
+                        </div>
+                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
+                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Results State -->
+            <div id="noResults" class="no-results rounded-xl p-8 text-center">
+                <div class="max-w-md mx-auto">
+                    <i class="fas fa-search-minus text-4xl text-gray-400 mb-4"></i>
+                    <h4 class="text-xl font-medium text-gray-700 mb-2">Ничего не найдено</h4>
+                    <p class="text-gray-500 mb-4">Попробуйте изменить поисковый запрос или использовать другие ключевые слова</p>
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+        </div>
+
+        <!-- All Tickets Section -->
+        <div class="mb-10">
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
+                <i class="fas fa-list-ul mr-2"></i> Все билеты
+            </h3>
+            <div id="allTicketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm pt-10 border-t border-gray-200">
+            <p>TicketsFinder © 2025 — Поиск ответов на экзаменационные билеты</p>
+            <p class="mt-1">Последнее обновление: 27 июня 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const resultsCount = document.getElementById('resultsCount');
+            const loadingState = document.getElementById('loadingState');
+            const noResults = document.getElementById('noResults');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const allTicketsContainer = document.getElementById('allTicketsContainer');
+            const themeToggle = document.getElementById('themeToggle');
+            const skeletonState = document.getElementById('skeletonState');
+
+            let ticketsData = [];
+            // Загрузка данных из tickets.json
+            fetch('./tickets.json')
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        ticketsData = data.map(t => ({
+                            number: t["id"] ? `Билет ${t["id"]}` : t["№"] ? `Билет ${t["№"]}` : '',
+                            topic: t.topic || t["Тема"] || '',
+                            question: t.question || t["Вопрос"] || '',
+                            answer: t.answer || t["Ответ"] || '',
+                            date: t.date || t["Дата"] || ''
+                        }));
+                        renderAllTickets();
+                    } else {
+                        ticketsData = [];
+                        allTicketsContainer.innerHTML = '<div class="text-gray-500">Нет данных для отображения.</div>';
+                    }
+                });
+
+            function performSearch() {
+                const query = searchInput.value.trim().toLowerCase();
+                if (query === '') {
+                    resultsContainer.classList.add('hidden');
+                    noResults.classList.add('hidden');
+                    skeletonState.classList.add('hidden');
+                    resultsCount.textContent = '0';
+                    return;
+                }
+                skeletonState.classList.remove('hidden');
+                noResults.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                setTimeout(() => {
+                    const filteredTickets = ticketsData.filter(ticket =>
+                        (ticket.number && ticket.number.toLowerCase().includes(query)) ||
+                        (ticket.topic && ticket.topic.toLowerCase().includes(query)) ||
+                        (ticket.question && ticket.question.toLowerCase().includes(query)) ||
+                        (ticket.answer && ticket.answer.toLowerCase().includes(query))
+                    );
+                    skeletonState.classList.add('hidden');
+                    if (filteredTickets.length > 0) {
+                        displayResults(filteredTickets);
+                        noResults.classList.add('hidden');
+                    } else {
+                        resultsContainer.classList.add('hidden');
+                        noResults.classList.remove('hidden');
+                        resultsCount.textContent = '0';
+                    }
+                }, 700);
+            }
+
+            function displayResults(tickets) {
+                resultsContainer.innerHTML = '';
+                resultsCount.textContent = tickets.length;
+                tickets.forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card bg-white rounded-xl overflow-hidden border border-gray-200';
+                    ticketCard.innerHTML = `
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${ticket.number}</span>
+                                <span class="text-gray-500 text-sm">${ticket.topic ? `Тема: ${ticket.topic}` : ''}</span>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">${ticket.question}</h4>
+                            <p class="text-gray-600 text-sm mb-4">${ticket.answer.substring(0, 100)}...</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400">${ticket.date ? `Добавлен: ${ticket.date}` : ''}</span>
+                                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <i class="fas fa-book-open mr-1"></i> Читать
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(ticketCard);
+                });
+                resultsContainer.classList.remove('hidden');
+            }
+
+            function renderAllTickets() {
+                allTicketsContainer.innerHTML = '';
+                if (!ticketsData.length) {
+                    allTicketsContainer.innerHTML = '<div class="text-gray-500">Нет билетов для отображения.</div>';
+                    return;
+                }
+                ticketsData.forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card bg-white rounded-xl overflow-hidden border border-gray-200';
+                    ticketCard.innerHTML = `
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${ticket.number}</span>
+                                <span class="text-gray-500 text-sm">${ticket.topic ? `Тема: ${ticket.topic}` : ''}</span>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">${ticket.question}</h4>
+                            <p class="text-gray-600 text-sm mb-4">${ticket.answer.substring(0, 100)}...</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400">${ticket.date ? `Добавлен: ${ticket.date}` : ''}</span>
+                                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <i class="fas fa-book-open mr-1"></i> Читать
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    allTicketsContainer.appendChild(ticketCard);
+                });
+            }
+
+            function setTheme(dark) {
+                if (dark) {
+                    document.body.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeToggle.querySelector('i').className = 'fas fa-sun';
+                    themeToggle.querySelector('span').textContent = 'Светлая тема';
+                } else {
+                    document.body.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    themeToggle.querySelector('i').className = 'fas fa-moon';
+                    themeToggle.querySelector('span').textContent = 'Тёмная тема';
+                }
+            }
+
+            // Init theme
+            const userTheme = localStorage.getItem('theme');
+            if (userTheme === 'dark' || (userTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setTheme(true);
+            } else {
+                setTheme(false);
+            }
+
+            themeToggle.addEventListener('click', function() {
+                setTheme(!document.body.classList.contains('dark'));
+            });
+
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            document.querySelectorAll('button.bg-gray-100').forEach(button => {
+                button.addEventListener('click', function() {
+                    searchInput.value = this.textContent.trim();
+                    performSearch();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+<!--
+README:
+1. Поместите tickets.json в ту же папку, что и index.html.
+2. Для корректной работы fetch используйте относительный путь: fetch('./tickets.json')
+3. Для публикации на GitHub Pages:
+   - Создайте репозиторий, добавьте index.html и tickets.json
+   - В настройках репозитория включите GitHub Pages (ветка main, папка root)
+   - Откройте сайт по выданной ссылке
+4. Если fetch не работает из-за CORS при локальном открытии файла, используйте GitHub Pages или локальный сервер (например, Live Server в VS Code).
+-->
+<!-- Итоговые улучшения:
+1. Параллакс-эффект фона
+2. Улучшенная анимация карточек
+3. Микровзаимодействия
+4. Индикатор загрузки
+5. Обработка ошибок
+6. Адаптивность
+7. Плавный скролл к результатам
+8. Переменные для цветов и плавные анимации
+-->
