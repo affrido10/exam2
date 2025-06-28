@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketsFinder — поиск ответов на билеты</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .search-container {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        .ticket-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .ticket-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .no-results {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        /* ====== DARK THEME ====== */
+        body.dark {
+            background: #18181b;
+        }
+        body.dark .search-container {
+            background: linear-gradient(135deg, #232046 0%, #3b2f5e 100%);
+        }
+        body.dark .ticket-card {
+            background: #23232b !important;
+            border-color: #2d2d36 !important;
+            color: #e5e7eb;
+        }
+        body.dark .ticket-card:hover {
+            box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+        }
+        body.dark .no-results {
+            background: linear-gradient(135deg, #23232b 0%, #18181b 100%);
+        }
+        body.dark .text-gray-800, body.dark .text-gray-700, body.dark .text-gray-600 {
+            color: #e5e7eb !important;
+        }
+        body.dark .bg-white {
+            background: #23232b !important;
+        }
+        body.dark .bg-indigo-100 {
+            background: #312e81 !important;
+            color: #a5b4fc !important;
+        }
+        body.dark .border-gray-200 {
+            border-color: #2d2d36 !important;
+        }
+        body.dark .text-indigo-800 {
+            color: #a5b4fc !important;
+        }
+        body.dark .text-gray-400 {
+            color: #a1a1aa !important;
+        }
+        body.dark .text-indigo-600 {
+            color: #818cf8 !important;
+        }
+        body.dark .text-indigo-700 {
+            color: #6366f1 !important;
+        }
+        body.dark .bg-gray-100 {
+            background: #23232b !important;
+        }
+        body.dark .border-gray-200 {
+            border-color: #23232b !important;
+        }
+        body.dark .focus\:ring-indigo-400:focus {
+            box-shadow: 0 0 0 2px #6366f1;
+        }
+        body, .search-container, .ticket-card, .no-results, .bg-white, .bg-indigo-100, .border-gray-200, .text-gray-800, .text-gray-700, .text-gray-600, .text-indigo-800, .text-gray-400, .text-indigo-600, .text-indigo-700, .bg-gray-100 {
+            transition: background 0.5s cubic-bezier(0.4,0,0.2,1), color 0.5s cubic-bezier(0.4,0,0.2,1), border-color 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4,0,0.6,1) infinite;
+        }
+        .bg-gray-200 {
+            background: #e5e7eb !important;
+        }
+        body.dark .bg-gray-200 {
+            background: #23232b !important;
+        }
+        .bg-indigo-100 {
+            background: #e0e7ff !important;
+        }
+        body.dark .bg-indigo-100 {
+            background: #312e81 !important;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+            .search-container {
+                padding: 1.25rem !important;
+            }
+            .ticket-card {
+                font-size: 1rem !important;
+            }
+            .ticket-card .p-5 {
+                padding: 1rem !important;
+            }
+            .max-w-2xl {
+                max-width: 100% !important;
+            }
+            h1, h2, h3, h4 {
+                font-size: 1.1em !important;
+            }
+            .rounded-xl {
+                border-radius: 0.75rem !important;
+            }
+            .px-5, .px-4, .px-6 {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            .py-4, .py-6, .py-3, .py-8 {
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+            }
+            .text-4xl, .text-5xl {
+                font-size: 2rem !important;
+            }
+            .text-lg {
+                font-size: 1.1rem !important;
+            }
+            .text-xl {
+                font-size: 1.2rem !important;
+            }
+            .search-container input {
+                font-size: 1rem !important;
+                padding: 0.75rem 1rem !important;
+            }
+            .search-container button {
+                font-size: 1rem !important;
+                padding: 0.9rem 0 !important;
+                width: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                position: static !important;
+                margin-top: 0.5rem;
+            }
+            #loadMoreBtn {
+                width: 100%;
+                font-size: 1.1rem;
+            }
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background: linear-gradient(120deg, #a5b4fc 0%, #818cf8 100%);
+            opacity: 0.18;
+            will-change: transform;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        body.dark::before {
+            background: linear-gradient(120deg, #232046 0%, #7c3aed 100%);
+            opacity: 0.13;
+        }
+        body::before {
+            transform: translateY(var(--parallax, 0px)) scale(var(--parallax-scale, 1)) rotate(var(--parallax-rotate, 0deg)) translateX(var(--parallax-x, 0px));
+            filter: blur(var(--parallax-blur, 0px)) saturate(var(--parallax-saturate, 1)) brightness(var(--parallax-bright, 1)) hue-rotate(var(--parallax-hue, 0deg)) contrast(var(--parallax-contrast, 1)) invert(var(--parallax-invert, 0)) grayscale(var(--parallax-grayscale, 0)) sepia(var(--parallax-sepia, 0));
+            opacity: var(--parallax-opacity, 0.18);
+            transition: transform 0.5s cubic-bezier(0.4,0,0.2,1), filter 0.5s, opacity 0.5s;
+        }
+        body.dark::before {
+            opacity: var(--parallax-dark-opacity, 0.13);
+        }
+        .search-container input {
+            color: #18181b !important;
+            background: #fff !important;
+            caret-color: #6366f1 !important;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+        body.dark .search-container input {
+            color: #f3f4f6 !important;
+            background: #23232b !important;
+            caret-color: #a5b4fc !important;
+        }
+        .search-container input::placeholder {
+            color: #b6b6c7 !important;
+            opacity: 1 !important;
+        }
+        body.dark .search-container input::placeholder {
+            color: #7c7c8a !important;
+        }
+        .search-container input:-webkit-autofill,
+        .search-container input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+            -webkit-text-fill-color: #18181b !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        body.dark .search-container input:-webkit-autofill,
+        body.dark .search-container input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px #23232b inset !important;
+            -webkit-text-fill-color: #f3f4f6 !important;
+        }
+        #allTicketsSection {
+            /* max-height: 2000px; */
+            opacity: 1;
+            transition: opacity 0.4s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: none; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+        #modalOverlay {
+            backdrop-filter: blur(2px);
+        }
+        #modalContent::-webkit-scrollbar {
+            width: 8px;
+        }
+        #modalContent::-webkit-scrollbar-thumb {
+            background: #e0e7ff;
+            border-radius: 4px;
+        }
+        body.modal-open {
+            overflow: hidden;
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(32px) scale(0.98); }
+            to { opacity: 1; transform: none; }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+        #modalOverlay {
+            backdrop-filter: blur(2px);
+        }
+        #modalDialog {
+            transition: box-shadow 0.3s, background 0.3s;
+        }
+        @media (max-width: 640px) {
+            #modalDialog { padding: 1.5rem 0.75rem; }
+        }
+        .search-icon-btn {
+            box-shadow: 0 2px 8px 0 rgba(80,60,200,0.10);
+            z-index: 2;
+            border: none;
+            outline: none;
+            padding: 0;
+            min-width: 44px;
+            min-height: 44px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+        }
+        .search-icon-btn:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 640px) {
+            .search-icon-btn {
+                right: 2.5vw;
+                width: 42px;
+                height: 42px;
+                min-width: 42px;
+                min-height: 42px;
+            }
+            .search-container input {
+                padding-right: 3.2rem !important;
+            }
+        }
+        .search-container .search-input {
+            padding-right: 3.5rem !important;
+        }
+        .search-container .search-btn {
+            position: absolute;
+            top: 50%;
+            right: 0.75rem;
+            transform: translateY(-50%);
+            width: 2.5rem;
+            height: 2.5rem;
+            min-width: 2.5rem;
+            min-height: 2.5rem;
+            border-radius: 9999px;
+            background: #6366f1;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
+            font-size: 1.25rem;
+            border: none;
+            outline: none;
+            transition: background 0.2s, box-shadow 0.2s;
+            z-index: 2;
+        }
+        .search-container .search-btn:hover,
+        .search-container .search-btn:focus {
+            background: #4f46e5;
+            box-shadow: 0 4px 16px 0 rgba(99,102,241,0.18);
+        }
+        @media (max-width: 640px) {
+            .search-container .search-btn {
+                width: 2.2rem;
+                height: 2.2rem;
+                min-width: 2.2rem;
+                min-height: 2.2rem;
+                font-size: 1.1rem;
+                right: 0.5rem;
+            }
+            .search-container .search-input {
+                padding-right: 3rem !important;
+            }
+        }
+        #themeToggle {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            color: #232046;
+            border: none;
+            box-shadow: 0 2px 8px 0 rgba(80,60,200,0.10);
+            font-size: 1.5rem;
+            transition: background 0.3s, color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        body.dark #themeToggle {
+            background: #232046;
+            color: #ffe066;
+        }
+        #themeToggle .icon-moon, #themeToggle .icon-sun {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            transition: opacity 0.4s, transform 0.4s;
+            font-size: 1.5rem;
+        }
+        #themeToggle .icon-sun {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.7) rotate(-30deg);
+        }
+        body.dark #themeToggle .icon-moon {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.7) rotate(30deg);
+        }
+        body.dark #themeToggle .icon-sun {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        }
+        /* конец стилей для themeToggle */
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-end mb-4">
+            <button id="themeToggle" aria-label="Сменить тему">
+                <i class="fas fa-moon icon-moon"></i>
+                <i class="fas fa-sun icon-sun"></i>
+            </button>
+        </div>
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
+                <span class="text-indigo-600">Tickets</span>Finder
+            </h1>
+            <p class="text-gray-600 text-lg">Найдите ответы на экзаменационные билеты</p>
+        </header>
+
+        <!-- Search Section -->
+        <div class="search-container rounded-xl p-6 mb-10 text-white">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-4">Поиск ответа на билет</h2>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Введите номер билета или ключевые слова..." 
+                        class="search-input w-full px-5 py-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    >
+                    <button 
+                        id="searchButton"
+                        class="search-btn"
+                        aria-label="Найти"
+                        type="button"
+                    >
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="mt-3 flex items-center text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span>Попробуйте ввести номер билета (например, "Билет 12") или тему вопроса</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="mb-10">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                <span id="resultsCount" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full mr-2">0</span>
+                Найдено ответов
+            </h3>
+
+            <!-- Loading State (Skeletons) -->
+            <div id="skeletonState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6 hidden">
+                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
+                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
+                        </div>
+                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
+                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse hidden md:block">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
+                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
+                        </div>
+                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
+                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse hidden lg:block">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
+                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
+                        </div>
+                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
+                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
+                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Results State -->
+            <div id="noResults" class="no-results rounded-xl p-8 text-center">
+                <div class="max-w-md mx-auto">
+                    <i class="fas fa-search-minus text-4xl text-gray-400 mb-4"></i>
+                    <h4 class="text-xl font-medium text-gray-700 mb-2">Ничего не найдено</h4>
+                    <p class="text-gray-500 mb-4">Попробуйте изменить поисковый запрос или использовать другие ключевые слова</p>
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+        </div>
+
+        <!-- All Tickets Section -->
+        <div class="mb-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 flex items-center">
+                    <i class="fas fa-list-ul mr-2"></i> Все билеты
+                </h3>
+                <button id="toggleAllTicketsBtn" class="px-4 py-2 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white font-semibold transition focus:outline-none">
+                    Скрыть
+                </button>
+            </div>
+            <div id="allTicketsSection" class="transition-all duration-500 ease-in-out overflow-hidden">
+                <div id="allTicketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div class="flex justify-center mt-6">
+                    <button id="loadMoreBtn" class="hidden px-6 py-3 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white font-semibold transition">Показать ещё</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm pt-10 border-t border-gray-200">
+            <p>TicketsFinder © 2025 — Поиск ответов на экзаменационные билеты</p>
+            <p class="mt-1">Последнее обновление: 27 июня 2025</p>
+        </footer>
+    </div>
+
+    <!-- Модальное окно для функции "Читать" -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center hidden transition-opacity duration-300">
+        <div id="modalDialog" class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-8 relative animate-fade-in">
+            <button id="modalCloseBtn" class="absolute top-4 right-4 text-gray-400 hover:text-indigo-600 text-2xl focus:outline-none" aria-label="Закрыть">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="modalContent">
+                <!-- Динамически вставляется вопрос и ответ -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const resultsCount = document.getElementById('resultsCount');
+            const loadingState = document.getElementById('loadingState');
+            const noResults = document.getElementById('noResults');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const allTicketsContainer = document.getElementById('allTicketsContainer');
+            const themeToggle = document.getElementById('themeToggle');
+            const skeletonState = document.getElementById('skeletonState');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const toggleAllTicketsBtn = document.getElementById('toggleAllTicketsBtn');
+            const allTicketsSection = document.getElementById('allTicketsSection');
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalDialog = document.getElementById('modalDialog');
+            const modalContent = document.getElementById('modalContent');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+            let ticketsData = [];
+            let allTicketsPage = 1;
+            const TICKETS_PER_PAGE = 12;
+            let allTicketsVisible = false;
+
+            // Загрузка данных из tickets.json
+            fetch('./tickets.json')
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        ticketsData = data.map(t => ({
+                            number: t["id"] ? `Билет ${t["id"]}` : t["№"] ? `Билет ${t["№"]}` : '',
+                            topic: t.topic || t["Тема"] || '',
+                            question: t.question || t["Вопрос"] || '',
+                            answer: t.answer || t["Ответ"] || '',
+                            date: t.date || t["Дата"] || ''
+                        }));
+                        renderAllTickets(true);
+                    } else {
+                        ticketsData = [];
+                        allTicketsContainer.innerHTML = '<div class="text-gray-500">Нет данных для отображения.</div>';
+                    }
+                });
+
+            function highlightText(text, query) {
+                if (!query) return text;
+                // Экранирование спецсимволов
+                const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                // Поддержка поиска по нескольким словам
+                const words = safe.split(/\s+/).filter(Boolean);
+                if (!words.length) return text;
+                const re = new RegExp('(' + words.join('|') + ')', 'gi');
+                return text.replace(re, '<mark class="bg-yellow-200 text-yellow-900 rounded px-1">$1</mark>');
+            }
+
+            function performSearch() {
+                const query = searchInput.value.trim().toLowerCase();
+                if (query === '') {
+                    resultsContainer.classList.add('hidden');
+                    noResults.classList.add('hidden');
+                    skeletonState.classList.add('hidden');
+                    resultsCount.textContent = '0';
+                    return;
+                }
+                skeletonState.classList.remove('hidden');
+                noResults.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                setTimeout(() => {
+                    let filteredTickets = [];
+                    // Поиск по номеру билета (например, "билет 12" или просто "12")
+                    const ticketNumMatch = query.match(/(билет\s*)?(\d{1,3})/i);
+                    if (ticketNumMatch) {
+                        const num = ticketNumMatch[2];
+                        filteredTickets = ticketsData.filter(ticket =>
+                            ticket.number.replace(/[^\d]/g, '') === num
+                        );
+                    }
+                    // Если не найдено по номеру — ищем по ключевым словам (вопрос, ответ, тема)
+                    if (filteredTickets.length === 0) {
+                        const words = query.split(/\s+/).filter(Boolean);
+                        filteredTickets = ticketsData.filter(ticket => {
+                            const text = [ticket.topic, ticket.question, ticket.answer].join(' ').toLowerCase();
+                            return words.every(word => text.includes(word));
+                        });
+                    }
+                    skeletonState.classList.add('hidden');
+                    if (filteredTickets.length > 0) {
+                        displayResults(filteredTickets, query);
+                        noResults.classList.add('hidden');
+                    } else {
+                        resultsContainer.classList.add('hidden');
+                        noResults.classList.remove('hidden');
+                        resultsCount.textContent = '0';
+                    }
+                }, 700);
+            }
+
+            function displayResults(tickets, query = '') {
+                resultsContainer.innerHTML = '';
+                resultsCount.textContent = tickets.length;
+                tickets.forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card bg-white rounded-xl overflow-hidden border border-gray-200';
+                    ticketCard.innerHTML = `
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlightText(ticket.number, query)}</span>
+                                <span class="text-gray-500 text-sm">${ticket.topic ? highlightText('Тема: ' + ticket.topic, query) : ''}</span>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">${highlightText(ticket.question, query)}</h4>
+                            <p class="text-gray-600 text-sm mb-4">${highlightText(ticket.answer.substring(0, 100), query)}...</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400">${ticket.date ? `Добавлен: ${ticket.date}` : ''}</span>
+                                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <i class="fas fa-book-open mr-1"></i> Читать
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    ticketCard._ticketData = ticket; // Сохраняем данные билета в DOM-элементе
+                    resultsContainer.appendChild(ticketCard);
+                });
+                resultsContainer.classList.remove('hidden');
+            }
+
+            function renderAllTickets(reset = false) {
+                if (reset) {
+                    allTicketsContainer.innerHTML = '';
+                    allTicketsPage = 1;
+                }
+                const start = 0;
+                const end = allTicketsPage * TICKETS_PER_PAGE;
+                const visibleTickets = ticketsData.slice(start, end);
+                allTicketsContainer.innerHTML = '';
+                visibleTickets.forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card bg-white rounded-xl overflow-hidden border border-gray-200';
+                    ticketCard.innerHTML = `
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${ticket.number}</span>
+                                <span class="text-gray-500 text-sm">${ticket.topic ? `Тема: ${ticket.topic}` : ''}</span>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">${ticket.question}</h4>
+                            <p class="text-gray-600 text-sm mb-4">${ticket.answer.substring(0, 100)}...</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400">${ticket.date ? `Добавлен: ${ticket.date}` : ''}</span>
+                                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <i class="fas fa-book-open mr-1"></i> Читать
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    ticketCard._ticketData = ticket;
+                    allTicketsContainer.appendChild(ticketCard);
+                });
+                // Кнопка "Показать ещё"
+                if (ticketsData.length > end) {
+                    loadMoreBtn.classList.remove('hidden');
+                } else {
+                    loadMoreBtn.classList.add('hidden');
+                }
+            }
+
+            // Кнопка "Показать ещё"
+            loadMoreBtn.addEventListener('click', function() {
+                allTicketsPage++;
+                renderAllTickets();
+            });
+
+            // Infinite scroll
+            window.addEventListener('scroll', function() {
+                if (loadMoreBtn.classList.contains('hidden')) return;
+                const scrollY = window.scrollY || window.pageYOffset;
+                const windowH = window.innerHeight;
+                const docH = document.body.offsetHeight;
+                if (scrollY + windowH + 200 >= docH) {
+                    loadMoreBtn.click();
+                }
+            });
+
+            function setTheme(dark) {
+                if (dark) {
+                    document.body.classList.add('dark');
+                } else {
+                    document.body.classList.remove('dark');
+                }
+            }
+
+            // Init theme
+            const userTheme = localStorage.getItem('theme');
+            if (userTheme === 'dark' || (userTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setTheme(true);
+            } else {
+                setTheme(false);
+            }
+
+            themeToggle.addEventListener('click', function() {
+                setTheme(!document.body.classList.contains('dark'));
+            });
+
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            document.querySelectorAll('button.bg-gray-100').forEach(button => {
+                button.addEventListener('click', function() {
+                    searchInput.value = this.textContent.trim();
+                    performSearch();
+                });
+            });
+
+            // Parallax background effect
+            window.addEventListener('scroll', function() {
+                const scrolled = window.scrollY;
+                document.body.style.setProperty('--parallax', `${scrolled * 0.25}px`);
+                document.body.style.setProperty('--parallax-opacity', `${Math.max(0.12, 0.18 - scrolled/2000)}`);
+                document.body.style.setProperty('--parallax-dark-opacity', `${Math.max(0.08, 0.13 - scrolled/2000)}`);
+                document.body.style.setProperty('--parallax-blur', `${Math.min(16, scrolled/30)}px`);
+                document.body.style.setProperty('--parallax-scale', `${1 + Math.min(0.04, scrolled/4000)}`);
+                document.body.style.setProperty('--parallax-rotate', `${Math.min(8, scrolled/1000)}deg`);
+                document.body.style.setProperty('--parallax-x', `${Math.sin(scrolled/300)*12}px`);
+                document.body.style.setProperty('--parallax-y', `${Math.cos(scrolled/400)*8}px`);
+                document.body.style.setProperty('--parallax-shadow', `${Math.min(32, scrolled/10)}px`);
+                document.body.style.setProperty('--parallax-saturate', `${1 + Math.min(0.2, scrolled/2000)}`);
+                document.body.style.setProperty('--parallax-bright', `${1 + Math.min(0.1, scrolled/3000)}`);
+                document.body.style.setProperty('--parallax-hue', `${Math.min(30, scrolled/100)}`);
+                document.body.style.setProperty('--parallax-contrast', `${1 + Math.min(0.1, scrolled/2000)}`);
+                document.body.style.setProperty('--parallax-invert', `${Math.min(0.1, scrolled/10000)}`);
+                document.body.style.setProperty('--parallax-grayscale', `${Math.min(0.1, scrolled/10000)}`);
+                document.body.style.setProperty('--parallax-sepia', `${Math.min(0.1, scrolled/10000)}`);
+                document.body.style.setProperty('--parallax-brightness', `${1 + Math.min(0.1, scrolled/3000)}`);
+                document.body.style.setProperty('--parallax-opacity', `${Math.max(0.12, 0.18 - scrolled/2000)}`);
+            });
+
+            function setAllTicketsVisible(visible) {
+                allTicketsVisible = visible;
+                if (visible) {
+                    allTicketsSection.style.maxHeight = allTicketsSection.scrollHeight + 'px';
+                    allTicketsSection.style.opacity = '1';
+                    toggleAllTicketsBtn.textContent = 'Скрыть';
+                } else {
+                    allTicketsSection.style.maxHeight = '0px';
+                    allTicketsSection.style.opacity = '0';
+                    toggleAllTicketsBtn.textContent = 'Показать';
+                }
+            }
+
+            toggleAllTicketsBtn.addEventListener('click', function() {
+                setAllTicketsVisible(!allTicketsVisible);
+            });
+            // Инициализация скрытого состояния
+            setTimeout(() => setAllTicketsVisible(false), 0);
+
+            // Открытие модального окна с полным вопросом и ответом
+            function openModal(ticket) {
+                modalContent.innerHTML = `
+                    <div class="mb-4">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${ticket.number}</span>
+                        <span class="text-gray-500 text-sm ml-2">${ticket.topic ? 'Тема: ' + ticket.topic : ''}</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">${ticket.question}</h4>
+                    <div class="text-gray-700 dark:text-gray-200 text-base whitespace-pre-line mb-6">${ticket.answer}</div>
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <span>${ticket.date ? 'Добавлен: ' + ticket.date : ''}</span>
+                    </div>
+                `;
+                modalOverlay.classList.remove('hidden');
+                setTimeout(() => { modalOverlay.classList.add('opacity-100'); }, 10);
+                document.body.style.overflow = 'hidden';
+            }
+            function closeModal() {
+                modalOverlay.classList.remove('opacity-100');
+                setTimeout(() => {
+                    modalOverlay.classList.add('hidden');
+                    modalContent.innerHTML = '';
+                    document.body.style.overflow = '';
+                }, 200);
+            }
+            modalCloseBtn.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) closeModal();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (!modalOverlay.classList.contains('hidden') && (e.key === 'Escape' || e.key === 'Esc')) closeModal();
+            });
+
+            // Делегирование: обработка кликов по кнопкам "Читать" (результаты поиска и все билеты)
+            function delegateReadButtons(container, getTickets) {
+                container.addEventListener('click', function(e) {
+                    const btn = e.target.closest('button');
+                    if (btn && btn.textContent.includes('Читать')) {
+                        const card = btn.closest('.ticket-card');
+                        if (!card) return;
+                        // Определяем индекс карточки
+                        const idx = Array.from(container.children).indexOf(card);
+                        const tickets = getTickets();
+                        if (tickets[idx]) openModal(tickets[idx]);
+                    }
+                });
+            }
+            // Для результатов поиска
+            delegateReadButtons(resultsContainer, () => {
+                // Получаем текущие отфильтрованные билеты из DOM
+                const cards = Array.from(resultsContainer.children);
+                return cards.map(card => {
+                    // Восстанавливаем данные из DOM (или можно хранить последний результат поиска в переменной)
+                    // Но проще: на каждый поиск мы знаем filteredTickets, сохраним его
+                    return card._ticketData;
+                });
+            });
+            // Для всех билетов
+            delegateReadButtons(allTicketsContainer, () => {
+                const start = 0;
+                const end = allTicketsPage * TICKETS_PER_PAGE;
+                return ticketsData.slice(start, end);
+            });
+
+            // Модифицируем displayResults/renderAllTickets чтобы сохранять данные билета в DOM
+            function displayResults(tickets, query = '') {
+                resultsContainer.innerHTML = '';
+                resultsCount.textContent = tickets.length;
+                tickets.forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card bg-white rounded-xl overflow-hidden border border-gray-200';
+                    ticketCard.innerHTML = `
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlightText(ticket.number, query)}</span>
+                                <span class="text-gray-500 text-sm">${ticket.topic ? highlightText('Тема: ' + ticket.topic, query) : ''}</span>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">${highlightText(ticket.question, query)}</h4>
+                            <p class="text-gray-600 text-sm mb-4">${highlightText(ticket.answer.substring(0, 100), query)}...</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400">${ticket.date ? `Добавлен: ${ticket.date}` : ''}</span>
+                                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <i class="fas fa-book-open mr-1"></i> Читать
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    ticketCard._ticketData = ticket; // Сохраняем данные билета в DOM-элементе
+                    resultsContainer.appendChild(ticketCard);
+                });
+                resultsContainer.classList.remove('hidden');
+            }
+            // Аналогично для всех билетов
+            function renderAllTickets(reset = false) {
+                if (reset) {
+                    allTicketsContainer.innerHTML = '';
+                    allTicketsPage = 1;
+                }
+                const start = 0;
+                const end = allTicketsPage * TICKETS_PER_PAGE;
+                const visibleTickets = ticketsData.slice(start, end);
+                allTicketsContainer.innerHTML = '';
+                visibleTickets.forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card bg-white rounded-xl overflow-hidden border border-gray-200';
+                    ticketCard.innerHTML = `
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${ticket.number}</span>
+                                <span class="text-gray-500 text-sm">${ticket.topic ? `Тема: ${ticket.topic}` : ''}</span>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">${ticket.question}</h4>
+                            <p class="text-gray-600 text-sm mb-4">${ticket.answer.substring(0, 100)}...</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400">${ticket.date ? `Добавлен: ${ticket.date}` : ''}</span>
+                                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <i class="fas fa-book-open mr-1"></i> Читать
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    ticketCard._ticketData = ticket;
+                    allTicketsContainer.appendChild(ticketCard);
+                });
+                if (ticketsData.length > end) {
+                    loadMoreBtn.classList.remove('hidden');
+                } else {
+                    loadMoreBtn.classList.add('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
