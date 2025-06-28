@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+            background: linear-gradient(135deg, var(--color-bg-start, #232046) 0%, var(--color-bg-end, #18181b) 100%);
             animation: softAppear 1.2s ease-out;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             scroll-behavior: smooth;
             transition: background 0.7s cubic-bezier(0.4,0,0.2,1);
         }
         .search-container {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #232046 0%, #312e81 100%);
         }
         .ticket-card {
             transition: all 0.3s ease;
@@ -38,10 +38,10 @@
         }
         /* ====== DARK THEME ====== */
         body.dark {
-            background: #18181b;
+            background: linear-gradient(135deg, #18181b 0%, #232046 100%);
         }
         body.dark .search-container {
-            background: linear-gradient(135deg, #232046 0%, #3b2f5e 100%);
+            background: linear-gradient(135deg, #18181b 0%, #232046 100%);
         }
         body.dark .ticket-card {
             background: #23232b !important;
@@ -384,157 +384,13 @@
     </style>
 </head>
 <body>
-    <div class="container mx-auto px-4 py-8">
-        <div class="flex justify-end mb-4">
-            <button id="themeToggle" aria-label="Сменить тему">
-                <i class="fas fa-moon icon-moon"></i>
-                <i class="fas fa-sun icon-sun"></i>
-            </button>
-        </div>
-        <!-- Header -->
-        <header class="mb-10 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
-                <span class="text-indigo-600">Tickets</span>Finder
-            </h1>
-            <p class="text-gray-600 text-lg">Найдите ответы на экзаменационные билеты</p>
-        </header>
-
-        <!-- Search Section -->
-        <div class="search-container rounded-xl p-6 mb-10 text-white">
-            <div class="max-w-2xl mx-auto">
-                <h2 class="text-2xl font-semibold mb-4">Поиск ответа на билет</h2>
-                <div class="relative">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        placeholder="Введите номер билета или ключевые слова..." 
-                        class="search-input w-full px-5 py-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    >
-                    <button 
-                        id="searchButton"
-                        class="search-btn"
-                        aria-label="Найти"
-                        type="button"
-                    >
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div class="mt-3 flex items-center text-sm">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <span>Попробуйте ввести номер билета (например, "Билет 12") или тему вопроса</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Results Section -->
-        <div class="mb-10">
-            <h3 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
-                <span id="resultsCount" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full mr-2">0</span>
-                Найдено ответов
-                <canvas id="searchStatsCanvas" width="44" height="44" style="margin-left:12px;vertical-align:middle;"></canvas>
-            </h3>
-
-            <!-- Loading State (Skeletons) -->
-            <div id="skeletonState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6 hidden">
-                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
-                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
-                        </div>
-                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
-                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
-                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
-                        <div class="flex justify-between items-center">
-                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
-                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse hidden md:block">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
-                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
-                        </div>
-                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
-                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
-                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
-                        <div class="flex justify-between items-center">
-                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
-                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="ticket-card bg-white rounded-xl overflow-hidden border border-gray-200 animate-pulse hidden lg:block">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="bg-indigo-100 h-5 w-20 rounded block"></span>
-                            <span class="bg-gray-200 h-4 w-16 rounded block"></span>
-                        </div>
-                        <div class="bg-gray-200 h-5 w-3/4 rounded mb-2"></div>
-                        <div class="bg-gray-200 h-4 w-full rounded mb-2"></div>
-                        <div class="bg-gray-200 h-4 w-5/6 rounded mb-4"></div>
-                        <div class="flex justify-between items-center">
-                            <span class="bg-gray-200 h-3 w-20 rounded block"></span>
-                            <span class="bg-indigo-100 h-8 w-16 rounded block"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- No Results State -->
-            <div id="noResults" class="no-results rounded-xl p-8 text-center">
-                <div class="max-w-md mx-auto">
-                    <i class="fas fa-search-minus text-4xl text-gray-400 mb-4"></i>
-                    <h4 class="text-xl font-medium text-gray-700 mb-2">Ничего не найдено</h4>
-                    <p class="text-gray-500 mb-4">Попробуйте изменить поисковый запрос или использовать другие ключевые слова</p>
-                </div>
-            </div>
-
-            <!-- Results Container -->
-            <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
-        </div>
-
-        <!-- All Tickets Section -->
-        <div class="mb-10" style="position:relative;">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 flex items-center">
-                    <i class="fas fa-list-ul mr-2"></i> Все билеты
-                </h3>
-                <button id="toggleAllTicketsBtn" class="px-4 py-2 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white font-semibold transition focus:outline-none">
-                    Скрыть
-                </button>
-            </div>
-            <div id="allTicketsSection" class="transition-all duration-500 ease-in-out overflow-hidden">
-                <canvas id="sectionTransitionCanvas" width="800" height="80" style="position:absolute;top:0;left:0;width:100%;height:80px;pointer-events:none;z-index:10;display:none;"></canvas>
-                <div id="allTicketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-                <div class="flex justify-center mt-6">
-                    <button id="loadMoreBtn" class="hidden px-6 py-3 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white font-semibold transition">Показать ещё</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="text-center text-gray-500 text-sm pt-10 border-t border-gray-200">
-            <p>TicketsFinder © 2025 — Поиск ответов на экзаменационные билеты</p>
-            <p class="mt-1">Последнее обновление: 27 июня 2025</p>
-        </footer>
-    </div>
-
-    <!-- Модальное окно для функции "Читать" -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center hidden transition-opacity duration-300">
-        <div id="modalDialog" class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-8 relative animate-fade-in">
-            <button id="modalCloseBtn" class="absolute top-4 right-4 text-gray-400 hover:text-indigo-600 text-2xl focus:outline-none" aria-label="Закрыть">
-                <i class="fas fa-times"></i>
-            </button>
-            <div id="modalContent">
-                <!-- Динамически вставляется вопрос и ответ -->
-            </div>
-        </div>
-    </div>
-
     <script>
+        // Цвета для градиента (ещё более тёмные и мягкие)
+        const gradA1 = [35,32,70];   // #232046
+        const gradA2 = [49,46,129];  // #312e81
+        const gradB1 = [24,24,27];   // #18181b
+        const gradB2 = [30,25,58];   // #1e193a
+
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
             const searchButton = document.getElementById('searchButton');
@@ -975,11 +831,11 @@
             function rgbToStr(rgb) {
                 return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
             }
-            // Цвета для градиента (можно настроить)
-            const gradA1 = [79,70,229];   // #4f46e5
-            const gradA2 = [124,58,237];  // #7c3aed
-            const gradB1 = [30,41,59];    // #1e293b
-            const gradB2 = [67,56,202];   // #4338ca
+            // Цвета для градиента (тёмные, мягкие, неяркие)
+            const gradA1 = [24, 24, 27];    // #18181b (очень тёмный серо-фиолетовый)
+            const gradA2 = [36, 32, 70];    // #242046 (тёмный фиолетово-синий)
+            const gradB1 = [30, 32, 40];    // #1e2028 (тёмный синий/серый)
+            const gradB2 = [43, 47, 94];    // #2b2f5e (тёмный сине-фиолетовый)
             window.addEventListener('scroll', function() {
                 const maxScroll = Math.max(1, document.body.scrollHeight - window.innerHeight);
                 const t = Math.min(1, window.scrollY / maxScroll);
