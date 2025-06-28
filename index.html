@@ -211,11 +211,17 @@
     function renderResults(list, query) {
       resultsContainer.innerHTML = '';
       if (!list.length) {
+        noResults.innerHTML = `
+          <div class="flex flex-col items-center justify-center">
+            <img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;">
+            <div class="text-lg font-bold mb-2">Билет не найден!</div>
+            <div class="text-base text-center">НЕМА ТАКОГО НЕЕЕЕМААААА 🎟️</div>
+          </div>`;
         noResults.classList.remove('hidden');
-        showNoResultsEasterEgg();
         return;
       }
       noResults.classList.add('hidden');
+      noResults.innerHTML = 'Ничего не найдено';
       list.forEach(ticket => {
         const card = document.createElement('div');
         card.className = 'ticket-card p-5';
