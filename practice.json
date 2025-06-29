@@ -1,0 +1,252 @@
+[
+  {
+    "билет": 1,
+    "практика": "Создание пользователя в AD с обязательной сменой пароля",
+    "инструкция": "GUI: 1. Откройте Active Directory Users and Computers (dsa.msc). 2. Кликните правой кнопкой по OU → Создать → Пользователь. 3. Заполните: Имя: Глеб, Фамилия: Орлов, Логин: gleb. 4. Задайте временный пароль (например, TempP@ssw0rd). 5. На вкладке Учетная запись → ☑ Пользователь должен изменить пароль при следующем входе. 6. Нажмите ОК.\nPowerShell: New-ADUser -Name \"Глеб Орлов\" -SamAccountName gleb -UserPrincipalName gleb@kudrth.local; Set-ADAccountPassword -Identity gleb -NewPassword (ConvertTo-SecureString \"TempP@ssw0rd\" -AsPlainText -Force); Set-ADUser -Identity gleb -ChangePasswordAtLogon $true"
+  },
+  {
+    "билет": 2,
+    "практика": "Добавление ПК в домен",
+    "инструкция": "1. На клиентском ПК: Win + Pause/Break → Дополнительные параметры системы → Имя компьютера → Изменить. 2. Выберите Домен → введите kudrth.local. 3. Укажите учетные данные администратора домена. 4. Перезагрузите ПК."
+  },
+  {
+    "билет": 3,
+    "практика": "Назначение роли FSMO",
+    "инструкция": "GUI: 1. Откройте Active Directory Users and Computers → правый клик по домену → Operations Masters. 2. На вкладке RID (или другой роли) → выберите контроллер домена → Change.\nPowerShell: Move-ADDirectoryServerOperationMasterRole -Identity <Имя_КД> -OperationMasterRole RidMaster"
+  },
+  {
+    "билет": 4,
+    "практика": "Создание OU и перемещение пользователя",
+    "инструкция": "1. В ADUC: правый клик по домену → Создать → Organizational Unit → имя: IT. 2. Перетащите пользователя gleb в OU IT."
+  },
+  {
+    "билет": 5,
+    "практика": "Настройка GPO, запрещающей панель управления",
+    "инструкция": "1. Откройте Group Policy Management (gpmc.msc). 2. Создайте GPO: правый клик по OU → Создать GPO → имя: Block Control Panel. 3. Откройте редактор GPO: User Configuration → Administrative Templates → Control Panel → Prohibit access to Control Panel → Enabled. 4. Свяжите GPO с нужным OU."
+  },
+  {
+    "билет": 6,
+    "практика": "Установка DHCP и настройка диапазона",
+    "инструкция": "1. В Server Manager → Добавить роли → DHCP-сервер → завершить установку. 2. Запустите мастер настройки DHCP → укажите диапазон (например, 192.168.1.100-200)."
+  },
+  {
+    "билет": 7,
+    "практика": "Настройка DNS, создание A-записи",
+    "инструкция": "1. В Server Manager → добавьте роль DNS-сервер. 2. Откройте DNS Manager → создайте зону прямого просмотра (имя: kudrth.local). 3. Правый клик по зоне → Создать запись → A → имя: server, IP: 192.168.1.10."
+  },
+  {
+    "билет": 8,
+    "практика": "Создание общей папки с доступом для группы",
+    "инструкция": "1. Создайте папку (например, C:\\Shared). 2. Правый клик → Свойства → Доступ → Расширенные настройки → Включить общий доступ. 3. На вкладке Безопасность → Добавить → выберите группу (например, IT_Admins) → задайте Полный доступ."
+  },
+  {
+    "билет": 9,
+    "практика": "Настройка chronyd (Red OS)",
+    "инструкция": "1. Установите chrony: sudo dnf install chrony. 2. Отредактируйте /etc/chrony.conf → добавьте: server pool.ntp.org iburst. 3. Перезапустите службу: sudo systemctl restart chronyd."
+  },
+  {
+    "билет": 10,
+    "практика": "Настройка резервного копирования",
+    "инструкция": "1. В Server Manager → Управление → Резервное копирование Windows. 2. Выберите Создать план резервного копирования → укажите системный том (например, C:\\)."
+  },
+  {
+    "билет": 11,
+    "практика": "Установка роли файлового сервера",
+    "инструкция": "1. В Server Manager → Добавить роли → Файловый сервер → завершить установку."
+  },
+  {
+    "билет": 12,
+    "практика": "Настройка GPO для паролей",
+    "инструкция": "1. Откройте Group Policy Management → выберите GPO домена. 2. Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy → установите Минимальная длина пароля ≥8."
+  },
+  {
+    "билет": 13,
+    "практика": "Включение аудита неудачных входов",
+    "инструкция": "1. Откройте Local Security Policy (secpol.msc) → Local Policies → Audit Policy → Audit Logon Events → выберите Аудит неудачных попыток."
+  },
+  {
+    "билет": 14,
+    "практика": "Настройка NAT через iptables (Red OS)",
+    "инструкция": "sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; echo 'net.ipv4.ip_forward=1' | sudo tee -a /etc/sysctl.conf; sudo sysctl -p"
+  },
+  {
+    "билет": 15,
+    "практика": "Установка Squid (Red OS)",
+    "инструкция": "1. Установите Squid: sudo dnf install squid. 2. Настройте /etc/squid/squid.conf → добавьте: http_access allow all. 3. Запустите службу: sudo systemctl start squid."
+  },
+  {
+    "билет": 16,
+    "практика": "Добавление записи в /etc/hosts (Red OS)",
+    "инструкция": "sudo nano /etc/hosts; # Добавьте строку: 192.168.1.10 server.kudrth.local"
+  },
+  {
+    "билет": 17,
+    "практика": "Создание RAID 1 через mdadm (Red OS)",
+    "инструкция": "sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb1 /dev/sdc1; sudo mkfs.ext4 /dev/md0"
+  },
+  {
+    "билет": 18,
+    "практика": "Отображение FSMO-ролей (Windows Server)",
+    "инструкция": "netdom query fsmo"
+  },
+  {
+    "билет": 19,
+    "практика": "Разрешение RDP (Windows Server)",
+    "инструкция": "Этот компьютер → Свойства → Дополнительные параметры системы → Удаленный доступ → Разрешить подключения."
+  },
+  {
+    "билет": 20,
+    "практика": "Создание пользователя через PowerShell",
+    "инструкция": "New-ADUser -Name \"Test User\" -SamAccountName testuser"
+  },
+  {
+    "билет": 21,
+    "практика": "Настройка подключения к LDAP (Windows Server)",
+    "инструкция": "ldapsearch -h <IP_AD> -D \"admin@kudrth.local\" -W"
+  },
+  {
+    "билет": 22,
+    "практика": "Создание ВМ в Hyper-V (Windows Server)",
+    "инструкция": "1. Откройте Hyper-V Manager → Создать → Виртуальная машина. 2. Укажите путь к установочному образу Windows 10."
+  },
+  {
+    "билет": 23,
+    "практика": "Настройка SNMP (Red OS)",
+    "инструкция": "1. Установите SNMP: sudo dnf install net-snmp. 2. Отредактируйте /etc/snmp/snmpd.conf → добавьте: rocommunity public localhost."
+  },
+  {
+    "билет": 24,
+    "практика": "Блокировка порта 22 (Red OS)",
+    "инструкция": "sudo iptables -A INPUT -p tcp --dport 22 -j DROP"
+  },
+  {
+    "билет": 25,
+    "практика": "Поиск неудачных входов (Windows Server)",
+    "инструкция": "1. Откройте Event Viewer → Windows Logs → Security. 2. Фильтруйте по ID 4625."
+  },
+  {
+    "билет": 26,
+    "практика": "Установка OpenVPN (Red OS)",
+    "инструкция": "sudo dnf install openvpn; sudo cp /usr/share/doc/openvpn-*/sample/sample-config-files/server.conf /etc/openvpn/server/"
+  },
+  {
+    "билет": 27,
+    "практика": "Настройка конфликта GPO (Windows Server)",
+    "инструкция": "1. Создайте два GPO с разными настройками (например, запрет и разрешение панели управления). 2. Используйте gpresult /r для проверки применения."
+  },
+  {
+    "билет": 28,
+    "практика": "Установка vsftpd (Red OS)",
+    "инструкция": "sudo dnf install vsftpd; sudo systemctl enable vsftpd"
+  },
+  {
+    "билет": 29,
+    "практика": "Установка WSUS (Windows Server)",
+    "инструкция": "1. В Server Manager → Добавить роли → Windows Server Update Services → завершить установку."
+  },
+  {
+    "билет": 30,
+    "практика": "Проверка тикетов Kerberos (Windows Server)",
+    "инструкция": "klist"
+  },
+  {
+    "билет": 31,
+    "практика": "Запрет входа в выходные дни (Windows Server)",
+    "инструкция": "1. Создайте GPO → User Configuration → Policies → Administrative Templates → System → Logon/Logoff → Logon Hours → установите запрет на субботу и воскресенье."
+  },
+  {
+    "билет": 32,
+    "практика": "Настройка хранения логов в journalctl (Red OS)",
+    "инструкция": "sudo nano /etc/systemd/journald.conf; # Измените строку: Storage=persistent"
+  },
+  {
+    "билет": 33,
+    "практика": "Проверка SELinux и переключение в Permissive (Red OS)",
+    "инструкция": "sestatus; sudo setenforce 0"
+  },
+  {
+    "билет": 34,
+    "практика": "Проверка Netlogon (Windows Server)",
+    "инструкция": "nltest /sc_query:kudrth.local"
+  },
+  {
+    "билет": 35,
+    "практика": "Настройка запрета USB через GPO (Windows Server)",
+    "инструкция": "1. GPO → Computer Configuration → Policies → Administrative Templates → System → Removable Storage Access → All Removable Storage classes: Deny all access → связать с OU."
+  },
+  {
+    "билет": 36,
+    "практика": "Добавление пользователя в группу «Администраторы домена» (Windows Server)",
+    "инструкция": "1. В ADUC: откройте свойства пользователя → вкладка Член групп → Добавить → введите Администраторы домена → Проверить имена → ОК."
+  },
+  {
+    "билет": 37,
+    "практика": "Настройка логирования sudo (Red OS)",
+    "инструкция": "sudo nano /etc/sudoers; # Добавьте строку: Defaults logfile=/var/log/sudo.log"
+  },
+  {
+    "билет": 38,
+    "практика": "Настройка статического IP (Red OS)",
+    "инструкция": "sudo nano /etc/sysconfig/network-scripts/ifcfg-eth0; # Измените: BOOTPROTO=static; ONBOOT=yes; IPADDR=192.168.1.100; NETMASK=255.255.255.0; GATEWAY=192.168.1.1; DNS1=8.8.8.8"
+  },
+  {
+    "билет": 39,
+    "практика": "Создание задания cron (Red OS)",
+    "инструкция": "crontab -e; # Добавьте строку: 0 0 * * * /usr/bin/backup.sh"
+  },
+  {
+    "билет": 40,
+    "практика": "Настройка доступа через setfacl (Red OS)",
+    "инструкция": "sudo useradd user1; sudo mkdir /restricted; sudo setfacl -m u:user1:rx /restricted"
+  },
+  {
+    "билет": 41,
+    "практика": "Установка WINS (Windows Server)",
+    "инструкция": "1. В Server Manager → добавьте роль WINS-сервер. 2. Откройте WINS Manager → Add Static Mapping → введите имя и IP."
+  },
+  {
+    "билет": 42,
+    "практика": "Проверка репликации (Windows Server)",
+    "инструкция": "repadmin /replsum"
+  },
+  {
+    "билет": 43,
+    "практика": "Создание LVM (Red OS)",
+    "инструкция": "sudo lvcreate -n myvol -L 2G vgname"
+  },
+  {
+    "билет": 44,
+    "практика": "Проверка sshd (Red OS)",
+    "инструкция": "sudo systemctl status sshd; sudo systemctl enable sshd"
+  },
+  {
+    "билет": 45,
+    "практика": "Отображение схемы AD (Windows Server)",
+    "инструкция": "1. Запустите adsiedit.msc → перейдите в раздел Schema."
+  },
+  {
+    "билет": 46,
+    "практика": "Настройка общего принтера (Windows Server)",
+    "инструкция": "1. Установите драйвер принтера → в свойствах принтера → Sharing → Share this printer. 2. На вкладке Security → добавьте группу → задайте разрешения."
+  },
+  {
+    "билет": 47,
+    "практика": "Создание задания в Task Scheduler (Windows Server)",
+    "инструкция": "1. Откройте Task Scheduler → Create Basic Task → триггер: Daily → 9:00 → действие: Start a program → путь к notepad.exe."
+  },
+  {
+    "билет": 48,
+    "практика": "Настройка отправки логов на syslog-сервер (Red OS)",
+    "инструкция": "На клиенте: sudo nano /etc/rsyslog.conf; # Добавьте: *.* @192.168.1.200. На сервере: настройте прием в /etc/rsyslog.conf."
+  },
+  {
+    "билет": 49,
+    "практика": "Установка freeradius (Red OS)",
+    "инструкция": "sudo dnf install freeradius"
+  },
+  {
+    "билет": 50,
+    "практика": "Настройка блокировки через GPO (Windows Server)",
+    "инструкция": "1. GPO → Computer Configuration → Policies → Windows Settings → Security Settings → Account Lockout Policy → установите: Account Lockout Threshold = 3; Account Lockout Duration = 30 минут."
+  }
+]
