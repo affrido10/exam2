@@ -104,11 +104,15 @@
   <div class="watermark" aria-hidden="true">TicketsFinder</div>
   <div id="affridoWatermark" style="position:fixed;left:1.2rem;bottom:1.2rem;z-index:30;color:#818cf8;opacity:0.38;font-size:1.08rem;font-family:monospace;pointer-events:none;user-select:none;letter-spacing:0.04em;">made by affrido10</div>
   <main class="min-h-screen flex flex-col items-center justify-start relative z-10">
-    <section class="search-container w-full">
-      <form id="searchForm" class="relative" autocomplete="off" spellcheck="false">
-        <input id="searchInput" class="search-input pr-12" type="text" placeholder="Поиск по номеру, теме или ключевым словам..." aria-label="Поиск билета" autofocus />
-        <button type="submit" class="search-btn" aria-label="Найти"><i class="fas fa-search"></i></button>
-      </form>
+    <section class="search-container w-full flex flex-col gap-2">
+      <div class="flex items-center gap-2 mb-2">
+        <form id="searchForm" class="relative flex-1" autocomplete="off" spellcheck="false">
+          <input id="searchInput" class="search-input pr-12" type="text" placeholder="Поиск по номеру, теме или ключевым словам..." aria-label="Поиск билета" autofocus />
+          <button type="submit" class="search-btn" aria-label="Найти"><i class="fas fa-search"></i></button>
+        </form>
+        <button id="practiceBtn" class="px-4 py-2 rounded-lg bg-indigo-800 text-white font-semibold shadow hover:bg-indigo-900 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-flask mr-1"></i>Практика</button>
+        <button id="backToTicketsBtn" class="px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold shadow hover:bg-gray-800 transition text-sm whitespace-nowrap hidden" type="button"><i class="fas fa-arrow-left mr-1"></i>К билетам</button>
+      </div>
       <div id="searchStats" class="mt-2 text-xs text-indigo-200"></div>
     </section>
     <section class="results-list w-full px-2" id="resultsSection">
@@ -156,6 +160,9 @@
     const modalContent = document.getElementById('modalContent');
     const modalCloseBtn = document.getElementById('modalCloseBtn');
     const searchStats = document.getElementById('searchStats');
+    const practiceBtn = document.getElementById('practiceBtn');
+    const backToTicketsBtn = document.getElementById('backToTicketsBtn');
+    let practiceData = [], isPracticeMode = false;
     // --- Utils ---
     function highlight(text, query) {
       if (!query) return text;
@@ -247,6 +254,34 @@
         resultsContainer.appendChild(card);
       });
     }
+    function renderPractice(list) {
+      resultsContainer.innerHTML = '';
+      if (!list.length) {
+        noResults.innerHTML = `<div class="flex flex-col items-center justify-center">
+          <img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;">
+          <div class="text-lg font-bold mb-2">Практика не найдена!</div>
+          <div class="text-base text-center">Нет заданий для практики 🎟️</div>
+        </div>`;
+        noResults.classList.remove('hidden');
+        return;
+      }
+      noResults.classList.add('hidden');
+      list.forEach(prac => {
+        const card = document.createElement('div');
+        card.className = 'ticket-card p-5';
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${prac.билет}</span>
+          </div>
+          <h4 class="text-lg font-semibold mb-2">${prac.практика}</h4>
+          <p class="text-gray-400 text-sm mb-3">${prac.инструкция.substring(0, 100)}...</p>
+          <div class="flex justify-end items-center">
+            <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button>
+          </div>`;
+        card.querySelector('.read-btn').onclick = ()=>showPracticeModal(prac);
+        resultsContainer.appendChild(card);
+      });
+    }
     function updateStats(found, total) {
       searchStats.textContent = found ? `Найдено: ${found} из ${total}` : '';
     }
@@ -284,6 +319,47 @@
         updateStats(res.length, ticketsData.length);
       }, 400);
     }
+    function showPracticeModal(prac) {
+      modalContent.innerHTML = `
+        <div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${prac.билет}</span></div>
+        <h4 class="text-lg font-bold mb-3">${prac.практика}</h4>
+        <div class="text-base mb-6 whitespace-pre-line">${prac.инструкция}</div>`;
+      modalOverlay.classList.add('active');
+      setTimeout(()=>{modalDialogFocus();},10);
+      document.body.style.overflow = 'hidden';
+    }
+    function loadPractice() {
+      showSkeleton();
+      fetch('./practice.json').then(r=>r.json()).then(data=>{
+        practiceData = Array.isArray(data) ? data : [];
+        hideSkeleton();
+        renderPractice(practiceData);
+        updateStats(practiceData.length, practiceData.length);
+      }).catch(()=>{
+        hideSkeleton();
+        noResults.classList.remove('hidden');
+      });
+    }
+    practiceBtn.onclick = ()=>{
+      isPracticeMode = true;
+      searchForm.classList.add('hidden');
+      practiceBtn.classList.add('hidden');
+      backToTicketsBtn.classList.remove('hidden');
+      showAllBtn.classList.add('hidden');
+      noResults.classList.add('hidden');
+      resultsContainer.innerHTML = '';
+      loadPractice();
+    };
+    backToTicketsBtn.onclick = ()=>{
+      isPracticeMode = false;
+      searchForm.classList.remove('hidden');
+      practiceBtn.classList.remove('hidden');
+      backToTicketsBtn.classList.add('hidden');
+      resultsContainer.innerHTML = '';
+      noResults.classList.add('hidden');
+      showAllBtn.classList.remove('hidden');
+      updateStats(0, ticketsData.length);
+    };
     // --- Show all ---
     showAllBtn.onclick = ()=>{
       renderResults(ticketsData, '');
@@ -297,8 +373,15 @@
       if(modalOverlay.classList.contains('active')&&(e.key==='Escape'||e.key==='Esc'))closeModal();
     });
     // --- Search events ---
-    searchForm.onsubmit = e=>{e.preventDefault();doSearch(searchInput.value.trim());};
-    searchInput.oninput = ()=>doSearch(searchInput.value.trim());
+    searchForm.onsubmit = e=>{
+      if(isPracticeMode) return;
+      e.preventDefault();
+      doSearch(searchInput.value.trim());
+    };
+    searchInput.oninput = ()=>{
+      if(isPracticeMode) return;
+      doSearch(searchInput.value.trim());
+    };
     // --- Fetch tickets ---
     function parseTickets(raw) {
       return raw.map(t=>({
@@ -325,7 +408,9 @@
         noResults.classList.remove('hidden');
       });
     }
-    loadTickets();
+    window.addEventListener('load',()=>{
+      loadTickets();
+    });
   </script>
 </body>
 </html>
