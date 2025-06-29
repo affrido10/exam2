@@ -378,7 +378,7 @@
         let pracRes = [];
         if (practiceData && practiceData.length) {
           const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-          pracRes = practiceData.filter(p=>(String(p["билет"])+p["практика"]+p["инструкция"]).toLowerCase().includes(words));
+          pracRes = practiceData.filter(p=>words.every(w=>(String(p["билет"])+p["практика"]+p["инструкция"]).toLowerCase().includes(w)));
         }
         filtered = res;
         hideSkeleton();
