@@ -449,6 +449,16 @@
         practiceData = Array.isArray(data) ? data : [];
       }).catch(()=>{ practiceData = []; });
     }
+    // --- Tickets parser ---
+    function parseTickets(raw) {
+      return raw.map(t=>({
+        number: t["id"] ? `Билет ${t["id"]}` : t["№"] ? `Билет ${t["№"]}` : '',
+        topic: t.topic || t["Тема"] || '',
+        question: t.question || t["Вопрос"] || '',
+        answer: t.answer || t["Ответ"] || '',
+        date: t.date || t["Дата"] || ''
+      }));
+    }
     // --- Fetch tickets ---
     function loadTickets() {
       showSkeleton();
