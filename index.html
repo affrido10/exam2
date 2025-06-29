@@ -358,7 +358,7 @@
         resultsContainer.innerHTML = '';
         noResults.classList.add('hidden');
         showAllBtn.classList.remove('hidden');
-        updateStats(0, ticketsData.length + (practiceData.length||0));
+        updateStats(0, ticketsData.length);
         return;
       }
       showAllBtn.classList.add('hidden');
@@ -374,16 +374,10 @@
           const words = query.toLowerCase().split(/\s+/).filter(Boolean);
           res = ticketsData.filter(t=>words.every(w=>(t.topic+t.question+t.answer).toLowerCase().includes(w)));
         }
-        // --- Поиск по практике ---
-        let pracRes = [];
-        if (practiceData && practiceData.length) {
-          const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-          pracRes = practiceData.filter(p=>words.every(w=>(String(p["билет"])+p["практика"]+p["инструкция"]).toLowerCase().includes(w)));
-        }
         filtered = res;
         hideSkeleton();
-        renderCombinedResults(res, pracRes, query);
-        updateStats(res.length + pracRes.length, ticketsData.length + (practiceData.length||0));
+        renderResults(res, query);
+        updateStats(res.length, ticketsData.length);
       }, 400);
     }
     function showPracticeModal(prac) {
