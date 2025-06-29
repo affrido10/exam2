@@ -95,11 +95,12 @@
   </style>
 </head>
 <body>
-  <div class="watermark" aria-hidden="true">TicketsFinder</div>
+  <div class="watermark" aria-hidden="true">affrido10</div>
   <main class="min-h-screen flex flex-col items-center justify-start relative z-10">
     <section class="search-container w-full">
       <form id="searchForm" class="relative" autocomplete="off" spellcheck="false">
         <input id="searchInput" class="search-input pr-12" type="text" placeholder="Поиск по номеру, теме или ключевым словам..." aria-label="Поиск билета" autofocus />
+        <span id="affridoMark" style="position:absolute;left:1.3rem;top:50%;transform:translateY(-50%);color:#818cf8;opacity:0.55;font-size:0.98rem;pointer-events:none;z-index:2;transition:opacity 0.2s;">made by affrido10</span>
         <button type="submit" class="search-btn" aria-label="Найти"><i class="fas fa-search"></i></button>
       </form>
       <div id="searchStats" class="mt-2 text-xs text-indigo-200"></div>
@@ -292,6 +293,19 @@
     // --- Search events ---
     searchForm.onsubmit = e=>{e.preventDefault();doSearch(searchInput.value.trim());};
     searchInput.oninput = ()=>doSearch(searchInput.value.trim());
+    // --- Affrido10 mark logic ---
+    const affridoMark = document.getElementById('affridoMark');
+    function updateAffridoMark() {
+      if(document.activeElement===searchInput || searchInput.value) {
+        affridoMark.style.opacity = '0';
+      } else {
+        affridoMark.style.opacity = '0.55';
+      }
+    }
+    searchInput.addEventListener('focus', updateAffridoMark);
+    searchInput.addEventListener('blur', updateAffridoMark);
+    searchInput.addEventListener('input', updateAffridoMark);
+    updateAffridoMark();
     // --- Fetch tickets ---
     function parseTickets(raw) {
       return raw.map(t=>({
