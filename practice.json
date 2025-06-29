@@ -250,4 +250,4 @@
     "инструкция": "1. **Создайте GPO** (см. Билет 5) → откройте редактор GPO.\n2. **Настройте блокировку:**\n   - Перейдите в **Computer Configuration → Policies → Windows Settings → Security Settings → Account Lockout Policy**.\n   - Двойной клик по **Account Lockout Threshold** → установите `3` → **ОК**.\n   - Аналогично установите **Account Lockout Duration** = `30 minutes`.\n3. **Свяжите GPO с OU** (например, `IT`). \n\n**Проверка:**\n- Введите неверный пароль 3 раза → учетная запись заблокируется."
   }
 ]
-```
+
