@@ -282,6 +282,67 @@
         resultsContainer.appendChild(card);
       });
     }
+    function renderCombinedResults(tickets, practices, query) {
+      resultsContainer.innerHTML = '';
+      let hasTickets = tickets.length > 0;
+      let hasPractice = practices.length > 0;
+      if (!hasTickets && !hasPractice) {
+        noResults.innerHTML = `
+          <div class="flex flex-col items-center justify-center">
+            <img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;">
+            <div class="text-lg font-bold mb-2">Ничего не найдено!</div>
+            <div class="text-base text-center">НЕМА ТАКОГО НЕЕЕЕМААААА 🎟️</div>
+          </div>`;
+        noResults.classList.remove('hidden');
+        return;
+      }
+      noResults.classList.add('hidden');
+      noResults.innerHTML = 'Ничего не найдено';
+      if (hasTickets) {
+        const header = document.createElement('div');
+        header.className = 'text-indigo-300 text-base font-bold mb-2 mt-2';
+        header.textContent = 'Билеты';
+        resultsContainer.appendChild(header);
+        tickets.forEach(ticket => {
+          const card = document.createElement('div');
+          card.className = 'ticket-card p-5';
+          card.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+              <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlight(ticket.number, query)}</span>
+              <span class="text-gray-400 text-xs ml-2">${ticket.topic ? highlight('Тема: '+ticket.topic, query) : ''}</span>
+            </div>
+            <h4 class="text-lg font-semibold mb-2">${highlight(ticket.question, query)}</h4>
+            <p class="text-gray-400 text-sm mb-3">${highlight(ticket.answer.substring(0, 100), query)}...</p>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500">${ticket.date ? 'Добавлен: '+ticket.date : ''}</span>
+              <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button>
+            </div>`;
+          card.querySelector('.read-btn').onclick = ()=>showModal(ticket);
+          resultsContainer.appendChild(card);
+        });
+      }
+      if (hasPractice) {
+        const header = document.createElement('div');
+        header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
+        header.textContent = 'Практика';
+        resultsContainer.appendChild(header);
+        practices.forEach(prac => {
+          const card = document.createElement('div');
+          card.className = 'ticket-card p-5';
+          card.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+              <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${highlight(prac["билет"], query)}</span>
+            </div>
+            <h4 class="text-lg font-semibold mb-2">${highlight(prac["практика"], query)}</h4>
+            <p class="text-gray-400 text-sm mb-3">${highlight(prac["инструкция"].replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,''), query).substring(0, 120)}...</p>
+            <div class="flex justify-end items-center">
+              <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button>
+            </div>`;
+          card.querySelector('.read-btn').onclick = ()=>showPracticeModal(prac);
+          resultsContainer.appendChild(card);
+        });
+      }
+    }
     function updateStats(found, total) {
       searchStats.textContent = found ? `Найдено: ${found} из ${total}` : '';
     }
@@ -297,7 +358,7 @@
         resultsContainer.innerHTML = '';
         noResults.classList.add('hidden');
         showAllBtn.classList.remove('hidden');
-        updateStats(0, ticketsData.length);
+        updateStats(0, ticketsData.length + (practiceData.length||0));
         return;
       }
       showAllBtn.classList.add('hidden');
@@ -313,10 +374,16 @@
           const words = query.toLowerCase().split(/\s+/).filter(Boolean);
           res = ticketsData.filter(t=>words.every(w=>(t.topic+t.question+t.answer).toLowerCase().includes(w)));
         }
+        // --- Поиск по практике ---
+        let pracRes = [];
+        if (practiceData && practiceData.length) {
+          const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+          pracRes = practiceData.filter(p=>(String(p["билет"])+p["практика"]+p["инструкция"]).toLowerCase().includes(words));
+        }
         filtered = res;
         hideSkeleton();
-        renderResults(res, query);
-        updateStats(res.length, ticketsData.length);
+        renderCombinedResults(res, pracRes, query);
+        updateStats(res.length + pracRes.length, ticketsData.length + (practiceData.length||0));
       }, 400);
     }
     function showPracticeModal(prac) {
@@ -382,27 +449,27 @@
       if(isPracticeMode) return;
       doSearch(searchInput.value.trim());
     };
-    // --- Fetch tickets ---
-    function parseTickets(raw) {
-      return raw.map(t=>({
-        number: t["id"] ? `Билет ${t["id"]}` : t["№"] ? `Билет ${t["№"]}` : '',
-        topic: t.topic || t["Тема"] || '',
-        question: t.question || t["Вопрос"] || '',
-        answer: t.answer || t["Ответ"] || '',
-        date: t.date || t["Дата"] || ''
-      }));
+    // --- Fetch practice on load ---
+    function loadPracticeData() {
+      return fetch('./practice.json').then(r=>r.json()).then(data=>{
+        practiceData = Array.isArray(data) ? data : [];
+      }).catch(()=>{ practiceData = []; });
     }
+    // --- Fetch tickets ---
     function loadTickets() {
       showSkeleton();
       fetch('./tickets.json').then(r=>r.json()).then(data=>{
         ticketsData = Array.isArray(data) ? parseTickets(data) : [];
-        hideSkeleton();
-        if(ticketsData.length) {
-          showAllBtn.classList.remove('hidden');
-          updateStats(0, ticketsData.length);
-        } else {
-          noResults.classList.remove('hidden');
-        }
+        // После загрузки билетов — загрузить практику
+        loadPracticeData().then(()=>{
+          hideSkeleton();
+          if(ticketsData.length) {
+            showAllBtn.classList.remove('hidden');
+            updateStats(0, ticketsData.length + (practiceData.length||0));
+          } else {
+            noResults.classList.remove('hidden');
+          }
+        });
       }).catch(()=>{
         hideSkeleton();
         noResults.classList.remove('hidden');
