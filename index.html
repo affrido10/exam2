@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ОТВЕТИКСЫ МА БОЙ</title>
+  <title>TicketsFinder </title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <style>
     html, body { height: 100%; min-height: 100%; }
     body {
@@ -102,11 +106,25 @@
   </style>
 </head>
 <body>
-  <div class="watermark" aria-hidden="true">TicketsFinder</div>
+  <div class="watermark flex items-center justify-center" aria-hidden="true">
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:1em;width:1em;min-width:56px;min-height:56px;max-width:12vw;max-height:12vw;margin-right:0.5em;opacity:0.18;">
+      <circle cx="36" cy="36" r="32" fill="#6366f1"/>
+      <path d="M24 36c0-6.627 5.373-12 12-12s12 5.373 12 12-5.373 12-12 12-12-5.373-12-12zm12-8a8 8 0 100 16 8 8 0 000-16z" fill="#fff"/>
+      <path d="M36 28v8l6 3" stroke="#232046" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    TicketsFinder
+  </div>
   <div id="affridoWatermark" style="position:fixed;left:1.2rem;bottom:1.2rem;z-index:30;color:#818cf8;opacity:0.38;font-size:1.08rem;font-family:monospace;pointer-events:none;user-select:none;letter-spacing:0.04em;">made by affrido10</div>
   <main class="min-h-screen flex flex-col items-center justify-start relative z-10">
     <section class="search-container w-full flex flex-col gap-2">
       <div class="flex items-center gap-2 mb-2">
+        <div class="flex items-center mr-2">
+          <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:2em;width:2em;min-width:28px;min-height:28px;max-width:7vw;max-height:7vw;margin-right:0.3em;opacity:0.85;">
+            <circle cx="36" cy="36" r="32" fill="#6366f1"/>
+            <path d="M24 36c0-6.627 5.373-12 12-12s12 5.373 12 12-5.373 12-12 12-12-5.373-12-12zm12-8a8 8 0 100 16 8 8 0 000-16z" fill="#fff"/>
+            <path d="M36 28v8l6 3" stroke="#232046" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <form id="searchForm" class="relative flex-1" autocomplete="off" spellcheck="false">
           <input id="searchInput" class="search-input pr-12" type="text" placeholder="Поиск по номеру, теме или ключевым словам..." aria-label="Поиск билета" autofocus />
           <button type="submit" class="search-btn" aria-label="Найти"><i class="fas fa-search"></i></button>
@@ -149,255 +167,139 @@
       const wm = document.querySelector('.watermark');
       if(wm) wm.style.transform = `translateY(${window.scrollY*0.18}px) scale(${1+Math.min(0.04,window.scrollY/4000)})`;
     });
-    // --- State ---
-    let ticketsData = [], filtered = [], allLoaded = false;
-    const searchInput = document.getElementById('searchInput');
-    const searchForm = document.getElementById('searchForm');
-    const resultsContainer = document.getElementById('resultsContainer');
-    const skeletonList = document.getElementById('skeletonList');
-    const noResults = document.getElementById('noResults');
-    const showAllBtn = document.getElementById('showAllBtn');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const modalContent = document.getElementById('modalContent');
-    const modalCloseBtn = document.getElementById('modalCloseBtn');
-    const searchStats = document.getElementById('searchStats');
-    const practiceBtn = document.getElementById('practiceBtn');
-    const backToTicketsBtn = document.getElementById('backToTicketsBtn');
-    let practiceData = [], isPracticeMode = false;
+    // --- State & Elements ---
+    let ticketsData = [], practiceData = [], answersData = [], isPracticeMode = false;
+    const el = id => document.getElementById(id);
+    const [searchInput, searchForm, resultsContainer, skeletonList, noResults, showAllBtn, modalOverlay, modalContent, modalCloseBtn, searchStats, practiceBtn, backToTicketsBtn] = [
+      'searchInput','searchForm','resultsContainer','skeletonList','noResults','showAllBtn','modalOverlay','modalContent','modalCloseBtn','searchStats','practiceBtn','backToTicketsBtn'
+    ].map(el);
+
     // --- Utils ---
-    function highlight(text, query) {
-      if (!query) return text;
-      const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const words = safe.split(/\s+/).filter(Boolean);
-      if (!words.length) return text;
-      const re = new RegExp('('+words.join('|')+')','gi');
-      return text.replace(re, '<mark style="background:#fde68a;color:#92400e;border-radius:0.3em;padding:0 2px;">$1</mark>');
-    }
-    function showSkeleton(count=6) {
-      skeletonList.innerHTML = '';
-      for(let i=0;i<count;i++) {
-        const sk = document.createElement('div'); sk.className = 'skeleton'; skeletonList.appendChild(sk);
-      }
-    }
-    function hideSkeleton() { skeletonList.innerHTML = ''; }
-    function showModal(ticket) {
-      modalContent.innerHTML = `
-        <div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${ticket.number}</span></div>
-        <h4 class="text-lg font-bold mb-3">${ticket.question}</h4>
-        <div class="text-base mb-6 whitespace-pre-line">${ticket.answer}</div>`;
-      modalOverlay.classList.add('active');
-      setTimeout(()=>{modalDialogFocus();},10);
-      document.body.style.overflow = 'hidden';
-    }
-    function closeModal() {
-      modalOverlay.classList.remove('active');
-      modalContent.innerHTML = '';
-      document.body.style.overflow = '';
-    }
-    function modalDialogFocus() {
-      const dialog = document.getElementById('modalDialog');
-      if(dialog) dialog.focus();
-    }
-    function showEasterEgg() {
-      modalContent.innerHTML = `
-        <div class="flex flex-col items-center justify-center">
-          <img src="https://cataas.com/cat/says/Мяу?width=320&height=220&fontSize=32" alt="Котик" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;">
-          <div class="text-lg font-bold mb-2">Пасхалка!</div>
-          <div class="text-base text-center">Вот тебе котик для настроения 🐾</div>
-        </div>`;
-      modalOverlay.classList.add('active');
-      setTimeout(()=>{modalDialogFocus();},10);
-      document.body.style.overflow = 'hidden';
-    }
-    function showNoResultsEasterEgg() {
-      modalContent.innerHTML = `
-        <div class="flex flex-col items-center justify-center">
-          <img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;">
-          <div class="text-lg font-bold mb-2">Билет не найден!</div>
-          <div class="text-base text-center">Но вот тебе виртуальный билет 🎟️</div>
-        </div>`;
-      modalOverlay.classList.add('active');
-      setTimeout(()=>{modalDialogFocus();},10);
-      document.body.style.overflow = 'hidden';
-    }
-    // --- Search ---
-    function renderResults(list, query) {
-      resultsContainer.innerHTML = '';
-      if (!Array.isArray(list) || !list.length) {
-        noResults.innerHTML = `
-          <div class="flex flex-col items-center justify-center">
-            <img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;">
-            <div class="text-lg font-bold mb-2">Билет не найден!</div>
-            <div class="text-base text-center">НЕМА ТАКОГО НЕЕЕЕМААААА 🎟️</div>
-          </div>`;
-        noResults.classList.remove('hidden');
-        return;
-      }
-      noResults.classList.add('hidden');
-      noResults.innerHTML = 'Ничего не найдено';
-      list.forEach(ticket => {
-        if (!ticket || typeof ticket !== 'object') return;
-        const card = document.createElement('div');
-        card.className = 'ticket-card p-5';
-        card.innerHTML = `
-          <div class="flex justify-between items-start mb-2">
-            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlight(ticket.number||'', query)}</span>
-          </div>
-          <h4 class="text-lg font-semibold mb-2">${highlight(ticket.question||'', query)}</h4>
-          <p class="text-gray-400 text-sm mb-3">${highlight((ticket.answer||'').substring(0, 100), query)}...</p>
-          <div class="flex justify-between items-center">
-            <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button>
-          </div>`;
-        card.querySelector('.read-btn').onclick = ()=>showModal(ticket);
-        resultsContainer.appendChild(card);
-      });
-    }
-    function renderPractice(list) {
+    const highlight = (text, query) => !query ? text : text.replace(new RegExp('('+query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').split(/\s+/).filter(Boolean).join('|')+')','gi'), '<mark style="background:#fde68a;color:#92400e;border-radius:0.3em;padding:0 2px;">$1</mark>');
+    const showSkeleton = (n=6) => { skeletonList.innerHTML = '<div class="skeleton"></div>'.repeat(n); };
+    const hideSkeleton = () => skeletonList.innerHTML = '';
+    const updateStats = (found, total) => searchStats.textContent = found ? `Найдено: ${found} из ${total}` : '';
+    const closeModal = () => { modalOverlay.classList.remove('active'); modalContent.innerHTML = ''; document.body.style.overflow = ''; };
+    const openModal = html => { modalContent.innerHTML = html; modalOverlay.classList.add('active'); setTimeout(()=>modalContent.focus?.(),10); document.body.style.overflow = 'hidden'; };
+
+    // --- Render ---
+    function renderList(list, query, isPractice, isAnswers) {
       resultsContainer.innerHTML = '';
       if (!list.length) {
-        noResults.innerHTML = `<div class="flex flex-col items-center justify-center">
-          <img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;">
-          <div class="text-lg font-bold mb-2">Практика не найдена!</div>
-          <div class="text-base text-center">Нет заданий для практики 🎟️</div>
-        </div>`;
+        noResults.innerHTML = `<div class="flex flex-col items-center justify-center"><img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;"><div class="text-lg font-bold mb-2">${isPractice?'Практика не найдена!':isAnswers?'Ответы не найдены!':'Билет не найден!'}</div><div class="text-base text-center">${isPractice?'Нет заданий для практики 🎟️':isAnswers?'Нет подробных ответов':'НЕМА ТАКОГО НЕЕЕЕМААААА 🎟️'}</div></div>`;
         noResults.classList.remove('hidden');
         return;
       }
       noResults.classList.add('hidden');
-      list.forEach(prac => {
+      list.forEach(item => {
         const card = document.createElement('div');
         card.className = 'ticket-card p-5';
-        card.innerHTML = `
-          <div class="flex justify-between items-start mb-2">
-            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${prac["билет"]}</span>
-          </div>
-          <h4 class="text-lg font-semibold mb-2">${prac["практика"]}</h4>
-          <p class="text-gray-400 text-sm mb-3">${prac["инструкция"].replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,'').substring(0, 120)}...</p>
-          <div class="flex justify-end items-center">
-            <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button>
-          </div>`;
-        card.querySelector('.read-btn').onclick = ()=>showPracticeModal(prac);
-        resultsContainer.appendChild(card);
-      });
-    }
-    function renderCombinedResults(tickets, practices, query) {
-      resultsContainer.innerHTML = '';
-      let hasTickets = tickets.length > 0;
-      let hasPractice = practices.length > 0;
-      if (!hasTickets && !hasPractice) {
-        noResults.innerHTML = `
-          <div class="flex flex-col items-center justify-center">
-            <img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;">
-            <div class="text-lg font-bold mb-2">Ничего не найдено!</div>
-            <div class="text-base text-center">НЕМА ТАКОГО НЕЕЕЕМААААА 🎟️</div>
-          </div>`;
-        noResults.classList.remove('hidden');
-        return;
-      }
-      noResults.classList.add('hidden');
-      noResults.innerHTML = 'Ничего не найдено';
-      if (hasTickets) {
-        const header = document.createElement('div');
-        header.className = 'text-indigo-300 text-base font-bold mb-2 mt-2';
-        header.textContent = 'Билеты';
-        resultsContainer.appendChild(header);
-        tickets.forEach(ticket => {
-          const card = document.createElement('div');
-          card.className = 'ticket-card p-5';
+        if (isAnswers) {
           card.innerHTML = `
             <div class="flex justify-between items-start mb-2">
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlight(ticket.number, query)}</span>
+              <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${highlight(item["билет"], query)}</span>
             </div>
-            <h4 class="text-lg font-semibold mb-2">${highlight(ticket.question, query)}</h4>
-            <p class="text-gray-400 text-sm mb-3">${highlight(ticket.answer.substring(0, 100), query)}...</p>
-            <div class="flex justify-between items-center">
-              <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button>
-            </div>`;
-          card.querySelector('.read-btn').onclick = ()=>showModal(ticket);
-          resultsContainer.appendChild(card);
-        });
-      }
-      if (hasPractice) {
-        const header = document.createElement('div');
-        header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
-        header.textContent = 'Практика';
-        resultsContainer.appendChild(header);
-        practices.forEach(prac => {
-          const card = document.createElement('div');
-          card.className = 'ticket-card p-5';
-          card.innerHTML = `
-            <div class="flex justify-between items-start mb-2">
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${highlight(prac["билет"], query)}</span>
-            </div>
-            <h4 class="text-lg font-semibold mb-2">${highlight(prac["практика"], query)}</h4>
-            <p class="text-gray-400 text-sm mb-3">${highlight(prac["инструкция"].replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,''), query).substring(0, 120)}...</p>
+            <h4 class="text-lg font-semibold mb-2">${item["вопросы"].map(q=>highlight(q,query)).join('<br>')}</h4>
+            <p class="text-gray-400 text-sm mb-2"><b>Теория:</b> ${highlight(item["теория"], query)}</p>
+            <p class="text-gray-400 text-sm mb-3"><b>Практика:</b> ${highlight(item["практика"], query)}</p>
             <div class="flex justify-end items-center">
               <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button>
             </div>`;
-          card.querySelector('.read-btn').onclick = ()=>showPracticeModal(prac);
-          resultsContainer.appendChild(card);
-        });
-      }
+          card.querySelector('.read-btn').onclick = () => openModal(
+            `<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${item["билет"]}</span></div>
+            <h4 class="text-lg font-bold mb-3">${item["вопросы"].map(q=>highlight(q,query)).join('<br>')}</h4>
+            <div class="text-base mb-4 whitespace-pre-line"><b>Теория:</b><br>${highlight(item["теория"], query)}</div>
+            <div class="text-base mb-6 whitespace-pre-line"><b>Практика:</b><br>${highlight(item["практика"], query)}</div>`
+          );
+        } else if (isPractice) {
+          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${highlight(item["билет"], query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item["практика"], query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight(item["инструкция"].replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,''), query).substring(0,120)}...</p><div class="flex justify-end items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button></div>`;
+          card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${item["билет"]}</span></div><h4 class="text-lg font-bold mb-3">${item["практика"]}</h4><div class="text-base mb-6 whitespace-pre-line">${item["инструкция"]}</div>`);
+        } else {
+          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlight(item.number||'', query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item.question||'', query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item.answer||'').substring(0,100), query)}...</p><div class="flex justify-between items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button></div>`;
+          card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${item.number}</span></div><h4 class="text-lg font-bold mb-3">${item.question}</h4><div class="text-base mb-6 whitespace-pre-line">${item.answer}</div>`);
+        }
+        resultsContainer.appendChild(card);
+      });
     }
-    function updateStats(found, total) {
-      searchStats.textContent = found ? `Найдено: ${found} из ${total}` : '';
+
+    // --- Data Loaders ---
+    const parseTickets = raw => Array.isArray(raw) ? raw.map((t,i) => ({ number: t["id"]?`Билет ${t["id"]}`:t["№"]?`Билет ${t["№"]}`:(t.number||`Билет ${i+1}`), question: t.question||t["Вопрос"]||'', answer: t.answer||t["Ответ"]||'' })) : [];
+    const loadJSON = url => fetch(url).then(r=>r.json()).catch(()=>[]);
+    async function loadAll() {
+      showSkeleton();
+      [ticketsData, practiceData, answersData] = await Promise.all([
+        loadJSON('./tickets.json').then(parseTickets),
+        loadJSON('./practice.json'),
+        loadJSON('./answers.json')
+      ]);
+      hideSkeleton();
+      showAllBtn.classList.remove('hidden');
+      updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0));
     }
+
+    // --- Search ---
     function doSearch(query) {
-      if (!ticketsData.length) return;
+      if (!ticketsData.length && !answersData.length) return;
       if (query && query.toLowerCase().includes('котик')) {
-        showEasterEgg();
+        openModal(`<div class="flex flex-col items-center justify-center"><img src="https://cataas.com/cat/says/Мяу?width=320&height=220&fontSize=32" alt="Котик" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;"><div class="text-lg font-bold mb-2">Пасхалка!</div><div class="text-base text-center">Вот тебе котик для настроения 🐾</div></div>`);
         searchInput.value = '';
         return;
       }
       if (!query) {
-        filtered = [];
         resultsContainer.innerHTML = '';
         noResults.classList.add('hidden');
         showAllBtn.classList.remove('hidden');
-        updateStats(0, ticketsData.length);
+        updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0));
         return;
       }
       showAllBtn.classList.add('hidden');
       showSkeleton();
       setTimeout(()=>{
-        let res = [];
+        let resTickets = [], resPractice = [], resAnswers = [];
         const numMatch = query.match(/(билет\s*)?(\d{1,3})/i);
         if(numMatch) {
           const num = numMatch[2];
-          res = ticketsData.filter(t=>t.number.replace(/[^\d]/g,'')===num);
+          resTickets = ticketsData.filter(t=>t.number.replace(/[^\d]/g,'')===num);
+          resPractice = practiceData.filter(p=>String(p["билет"])===num);
+          resAnswers = answersData.filter(a=>String(a["билет"])===num);
         }
-        if(!res.length) {
+        if(!resTickets.length && !resPractice.length && !resAnswers.length) {
           const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-          res = ticketsData.filter(t=>words.every(w=>(t.topic+t.question+t.answer).toLowerCase().includes(w)));
+          resTickets = ticketsData.filter(t=>words.every(w=>(t.question+t.answer).toLowerCase().includes(w)));
+          resPractice = practiceData.filter(p=>words.every(w=>(p["практика"]+p["инструкция"]).toLowerCase().includes(w)));
+          resAnswers = answersData.filter(a=>words.some(w=>a["вопросы"].some(q=>q.toLowerCase().includes(w))||a["теория"].toLowerCase().includes(w)||a["практика"].toLowerCase().includes(w)));
         }
-        filtered = res;
         hideSkeleton();
-        renderResults(res, query);
-        updateStats(res.length, ticketsData.length);
-      }, 400);
+        if(resTickets.length) {
+          const header = document.createElement('div');
+          header.className = 'text-indigo-300 text-base font-bold mb-2 mt-2';
+          header.textContent = 'Билеты';
+          resultsContainer.appendChild(header);
+          renderList(resTickets, query, false, false);
+        }
+        if(resPractice.length) {
+          const header = document.createElement('div');
+          header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
+          header.textContent = 'Практика';
+          resultsContainer.appendChild(header);
+          renderList(resPractice, query, true, false);
+        }
+        if(resAnswers.length) {
+          const header = document.createElement('div');
+          header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
+          header.textContent = 'Ответы';
+          resultsContainer.appendChild(header);
+          renderList(resAnswers, query, false, true);
+        }
+        if(!resTickets.length && !resPractice.length && !resAnswers.length) {
+          renderList([], query, false, false);
+        }
+        updateStats(resTickets.length+resPractice.length+resAnswers.length, ticketsData.length + (practiceData.length||0) + (answersData.length||0));
+      }, 300);
     }
-    function showPracticeModal(prac) {
-      modalContent.innerHTML = `
-        <div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${prac["билет"]}</span></div>
-        <h4 class="text-lg font-bold mb-3">${prac["практика"]}</h4>
-        <div class="text-base mb-6 whitespace-pre-line">${prac["инструкция"]}</div>`;
-      modalOverlay.classList.add('active');
-      setTimeout(()=>{modalDialogFocus();},10);
-      document.body.style.overflow = 'hidden';
-    }
-    function loadPractice() {
-      showSkeleton();
-      fetch('./practice.json').then(r=>r.json()).then(data=>{
-        practiceData = Array.isArray(data) ? data : [];
-        hideSkeleton();
-        renderPractice(practiceData);
-        updateStats(practiceData.length, practiceData.length);
-      }).catch(()=>{
-        hideSkeleton();
-        noResults.classList.remove('hidden');
-      });
-    }
-    practiceBtn.onclick = ()=>{
+
+    // --- Practice Mode ---
+    practiceBtn.onclick = () => {
       isPracticeMode = true;
       searchForm.classList.add('hidden');
       practiceBtn.classList.add('hidden');
@@ -405,9 +307,14 @@
       showAllBtn.classList.add('hidden');
       noResults.classList.add('hidden');
       resultsContainer.innerHTML = '';
-      loadPractice();
+      showSkeleton();
+      setTimeout(()=>{
+        hideSkeleton();
+        renderList(practiceData, '', true);
+        updateStats(practiceData.length, practiceData.length);
+      }, 200);
     };
-    backToTicketsBtn.onclick = ()=>{
+    backToTicketsBtn.onclick = () => {
       isPracticeMode = false;
       searchForm.classList.remove('hidden');
       practiceBtn.classList.remove('hidden');
@@ -417,78 +324,25 @@
       showAllBtn.classList.remove('hidden');
       updateStats(0, ticketsData.length);
     };
-    // --- Show all ---
-    showAllBtn.onclick = ()=>{
-      renderResults(ticketsData, '');
+    showAllBtn.onclick = () => {
+      renderList(ticketsData, '', false);
       showAllBtn.classList.add('hidden');
       updateStats(ticketsData.length, ticketsData.length);
     };
+
     // --- Modal events ---
     modalCloseBtn.onclick = closeModal;
-    modalOverlay.onclick = e=>{if(e.target===modalOverlay)closeModal();};
+    modalOverlay.onclick = e => { if(e.target===modalOverlay) closeModal(); };
     document.addEventListener('keydown',e=>{
-      if(modalOverlay.classList.contains('active')&&(e.key==='Escape'||e.key==='Esc'))closeModal();
+      if(modalOverlay.classList.contains('active')&&(e.key==='Escape'||e.key==='Esc')) closeModal();
     });
+
     // --- Search events ---
-    searchForm.onsubmit = e=>{
-      if(isPracticeMode) return;
-      e.preventDefault();
-      doSearch(searchInput.value.trim());
-    };
-    searchInput.oninput = ()=>{
-      if(isPracticeMode) return;
-      doSearch(searchInput.value.trim());
-    };
-    // --- Fetch practice on load ---
-    function loadPracticeData() {
-      return fetch('./practice.json').then(r=>r.json()).then(data=>{
-        practiceData = Array.isArray(data) ? data : [];
-      }).catch(()=>{ practiceData = []; });
-    }
-    // --- Tickets parser ---
-    function parseTickets(raw) {
-      if (!Array.isArray(raw)) {
-        console.error('tickets.json не массив:', raw);
-        return [];
-      }
-      return raw.map((t, i) => ({
-        number: t["id"] ? `Билет ${t["id"]}` : t["№"] ? `Билет ${t["№"]}` : (t.number || `Билет ${i+1}`),
-        topic: '', // нет темы
-        question: t.question || t["Вопрос"] || '',
-        answer: t.answer || t["Ответ"] || '',
-        date: '' // нет даты
-      }));
-    }
-    // --- Fetch tickets ---
-    function loadTickets() {
-      showSkeleton();
-      fetch('./tickets.json').then(r=>{
-        if (!r.ok) throw new Error('Ошибка загрузки tickets.json');
-        return r.json();
-      }).then(data=>{
-        ticketsData = Array.isArray(data) ? parseTickets(data) : [];
-        console.log('ticketsData:', ticketsData);
-        // После загрузки билетов — загрузить практику
-        loadPracticeData().then(()=>{
-          hideSkeleton();
-          if(ticketsData.length) {
-            showAllBtn.classList.remove('hidden');
-            updateStats(0, ticketsData.length + (practiceData.length||0));
-          } else {
-            noResults.classList.remove('hidden');
-            noResults.innerHTML = 'Ошибка: билеты не загружены или пусты.';
-          }
-        });
-      }).catch((e)=>{
-        hideSkeleton();
-        noResults.classList.remove('hidden');
-        noResults.innerHTML = 'Ошибка загрузки tickets.json: ' + e;
-        console.error('Ошибка загрузки tickets.json:', e);
-      });
-    }
-    window.addEventListener('load',()=>{
-      loadTickets();
-    });
+    searchForm.onsubmit = e => { if(isPracticeMode) return; e.preventDefault(); doSearch(searchInput.value.trim()); };
+    searchInput.oninput = () => { if(isPracticeMode) return; doSearch(searchInput.value.trim()); };
+
+    // --- Init ---
+    window.addEventListener('load', loadAll);
   </script>
 </body>
 </html>
