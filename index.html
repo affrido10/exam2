@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TicketsFinder</title>
+  <title>TicketsFinder — поиск экзаменационных билетов</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -108,6 +108,35 @@
     #modalContent {
       max-height: 70vh;
       overflow-y: auto;
+    }
+    #modalContent::-webkit-scrollbar {
+      width: 8px;
+      background: transparent;
+    }
+    #modalContent::-webkit-scrollbar-thumb {
+      background: linear-gradient(120deg, #818cf8 40%, #6366f1 100%);
+      border-radius: 8px;
+      min-height: 32px;
+    }
+    #modalContent::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(120deg, #a5b4fc 40%, #6366f1 100%);
+    }
+    #modalContent {
+      scrollbar-width: thin;
+      scrollbar-color: #818cf8 #232046;
+    }
+    /* Для всей страницы — тоже стильный скроллбар */
+    body::-webkit-scrollbar {
+      width: 10px;
+      background: transparent;
+    }
+    body::-webkit-scrollbar-thumb {
+      background: #232046;
+      border-radius: 8px;
+    }
+    body {
+      scrollbar-width: thin;
+      scrollbar-color: #232046 #18181b;
     }
     @keyframes fade-in { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
     @media (max-width: 640px) {
