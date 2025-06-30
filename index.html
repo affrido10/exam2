@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TicketsFinder — поиск экзаменационных билетов</title>
+  <title>TicketsFinder</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -131,9 +131,7 @@
         </form>
         <button id="practiceBtn" class="px-4 py-2 rounded-lg bg-indigo-800 text-white font-semibold shadow hover:bg-indigo-900 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-flask mr-1"></i>Практика</button>
         <button id="backToTicketsBtn" class="px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold shadow hover:bg-gray-800 transition text-sm whitespace-nowrap hidden" type="button"><i class="fas fa-arrow-left mr-1"></i>К билетам</button>
-        <!-- Добавляем кнопку "Для дебилов" -->
-        <button id="dumbBtn" class="px-4 py-2 rounded-lg bg-pink-700 text-white font-semibold shadow hover:bg-pink-800 transition text-sm whitespace-nowrap ml-2" type="button"><i class="fas fa-question-circle mr-1"></i>Для дебилов</button>
-        <!-- Добавляем кнопку "35-50" -->
+        <!-- Кнопка 35-50 в общем стиле -->
         <button id="rangeBtn" class="px-4 py-2 rounded-lg bg-amber-700 text-white font-semibold shadow hover:bg-amber-800 transition text-sm whitespace-nowrap ml-2" type="button"><i class="fas fa-list-ol mr-1"></i>35-50</button>
       </div>
       <div id="searchStats" class="mt-2 text-xs text-indigo-200"></div>
@@ -307,7 +305,7 @@
       isPracticeMode = true;
       searchForm.classList.add('hidden');
       practiceBtn.classList.add('hidden');
-      dumbBtn && dumbBtn.classList.add('hidden');
+      rangeBtn.classList.add('hidden');
       backToTicketsBtn.classList.remove('hidden');
       showAllBtn.classList.add('hidden');
       noResults.classList.add('hidden');
@@ -319,96 +317,39 @@
         updateStats(practiceData.length, practiceData.length);
       }, 200);
     };
-    // Добавляем кнопку "Для дебилов" только через JS
-    let dumbBtn;
-    window.addEventListener('DOMContentLoaded', () => {
-      dumbBtn = document.createElement('button');
-      dumbBtn.id = 'dumbBtn';
-      dumbBtn.className = 'px-4 py-2 rounded-lg bg-pink-700 text-white font-semibold shadow hover:bg-pink-800 transition text-sm whitespace-nowrap ml-2';
-      dumbBtn.type = 'button';
-      dumbBtn.innerHTML = '<i class="fas fa-question-circle mr-1"></i>Для дебилов';
-      practiceBtn.parentNode.insertBefore(dumbBtn, backToTicketsBtn);
-      let isDumbMode = false;
-      dumbBtn.onclick = () => {
-        isDumbMode = true;
-        searchForm.classList.add('hidden');
-        practiceBtn.classList.add('hidden');
-        dumbBtn.classList.add('hidden');
-        backToTicketsBtn.classList.remove('hidden');
-        showAllBtn.classList.add('hidden');
-        noResults.classList.add('hidden');
+    // --- Раздел 35-50 ---
+    let isRangeMode = false;
+    rangeBtn.onclick = () => {
+      isRangeMode = true;
+      searchForm.classList.add('hidden');
+      practiceBtn.classList.add('hidden');
+      rangeBtn.classList.add('hidden');
+      backToTicketsBtn.classList.remove('hidden');
+      showAllBtn.classList.add('hidden');
+      noResults.classList.add('hidden');
+      resultsContainer.innerHTML = '';
+      showSkeleton();
+      setTimeout(()=>{
+        hideSkeleton();
+        renderList(answersData, '', false, true);
+        updateStats(answersData.length, answersData.length);
+      }, 200);
+    };
+    backToTicketsBtn.onclick = () => {
+      if(isPracticeMode || isRangeMode) {
+        isPracticeMode = false;
+        isRangeMode = false;
+        searchForm.classList.remove('hidden');
+        practiceBtn.classList.remove('hidden');
+        rangeBtn.classList.remove('hidden');
+        backToTicketsBtn.classList.add('hidden');
         resultsContainer.innerHTML = '';
-        showSkeleton();
-        setTimeout(()=>{
-          hideSkeleton();
-          renderList(answersData, '', false, true);
-          updateStats(answersData.length, answersData.length);
-        }, 200);
-      };
-      // Модифицируем backToTicketsBtn
-      const origBackToTickets = backToTicketsBtn.onclick;
-      backToTicketsBtn.onclick = () => {
-        if(isDumbMode) {
-          isDumbMode = false;
-          searchForm.classList.remove('hidden');
-          practiceBtn.classList.remove('hidden');
-          dumbBtn.classList.remove('hidden');
-          backToTicketsBtn.classList.add('hidden');
-          resultsContainer.innerHTML = '';
-          noResults.classList.add('hidden');
-          showAllBtn.classList.remove('hidden');
-          updateStats(0, ticketsData.length);
-          return;
-        }
-        origBackToTickets && origBackToTickets();
-      };
-    });
-    // Добавляем кнопку "35-50"
-    let rangeBtn;
-    window.addEventListener('DOMContentLoaded', () => {
-      rangeBtn = document.createElement('button');
-      rangeBtn.id = 'rangeBtn';
-      rangeBtn.className = 'px-4 py-2 rounded-lg bg-amber-700 text-white font-semibold shadow hover:bg-amber-800 transition text-sm whitespace-nowrap ml-2';
-      rangeBtn.type = 'button';
-      rangeBtn.innerHTML = '<i class="fas fa-list-ol mr-1"></i>35-50';
-      practiceBtn.parentNode.insertBefore(rangeBtn, backToTicketsBtn);
-      let isRangeMode = false;
-      rangeBtn.onclick = () => {
-        isRangeMode = true;
-        searchForm.classList.add('hidden');
-        practiceBtn.classList.add('hidden');
-        dumbBtn && dumbBtn.classList.add('hidden');
-        rangeBtn.classList.add('hidden');
-        backToTicketsBtn.classList.remove('hidden');
-        showAllBtn.classList.add('hidden');
         noResults.classList.add('hidden');
-        resultsContainer.innerHTML = '';
-        showSkeleton();
-        setTimeout(()=>{
-          hideSkeleton();
-          renderList(answersData, '', false, true);
-          updateStats(answersData.length, answersData.length);
-        }, 200);
-      };
-      // Модифицируем backToTicketsBtn
-      const origBackToTickets = backToTicketsBtn.onclick;
-      backToTicketsBtn.onclick = () => {
-        if(isRangeMode) {
-          isRangeMode = false;
-          searchForm.classList.remove('hidden');
-          practiceBtn.classList.remove('hidden');
-          dumbBtn && dumbBtn.classList.remove('hidden');
-          rangeBtn.classList.remove('hidden');
-          backToTicketsBtn.classList.add('hidden');
-          resultsContainer.innerHTML = '';
-          noResults.classList.add('hidden');
-          showAllBtn.classList.remove('hidden');
-          updateStats(0, ticketsData.length);
-          return;
-        }
-        origBackToTickets && origBackToTickets();
-      };
-    });
+        showAllBtn.classList.remove('hidden');
+        updateStats(0, ticketsData.length);
+        return;
+      }
+    };
     showAllBtn.onclick = () => {
       renderList(ticketsData, '', false);
       showAllBtn.classList.add('hidden');
