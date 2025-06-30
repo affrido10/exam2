@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TicketsFinder</title>
+  <title>TicketsFinder — поиск экзаменационных билетов</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -133,6 +133,8 @@
         <button id="backToTicketsBtn" class="px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold shadow hover:bg-gray-800 transition text-sm whitespace-nowrap hidden" type="button"><i class="fas fa-arrow-left mr-1"></i>К билетам</button>
         <!-- Кнопка 35-50 в общем стиле -->
         <button id="rangeBtn" class="px-4 py-2 rounded-lg bg-amber-700 text-white font-semibold shadow hover:bg-amber-800 transition text-sm whitespace-nowrap ml-2" type="button"><i class="fas fa-list-ol mr-1"></i>35-50</button>
+        <!-- Кнопка сложные 1-7 -->
+        <button id="hardBtn" class="px-4 py-2 rounded-lg bg-rose-700 text-white font-semibold shadow hover:bg-rose-800 transition text-sm whitespace-nowrap ml-2" type="button"><i class="fas fa-brain mr-1"></i>Сложные 1-7</button>
       </div>
       <div id="searchStats" class="mt-2 text-xs text-indigo-200"></div>
     </section>
@@ -170,10 +172,10 @@
       if(wm) wm.style.transform = `translateY(${window.scrollY*0.18}px) scale(${1+Math.min(0.04,window.scrollY/4000)})`;
     });
     // --- State & Elements ---
-    let ticketsData = [], practiceData = [], answersData = [], isPracticeMode = false;
+    let ticketsData = [], practiceData = [], answersData = [], hardData = [], isPracticeMode = false, isRangeMode = false, isHardMode = false;
     const el = id => document.getElementById(id);
-    const [searchInput, searchForm, resultsContainer, skeletonList, noResults, showAllBtn, modalOverlay, modalContent, modalCloseBtn, searchStats, practiceBtn, backToTicketsBtn] = [
-      'searchInput','searchForm','resultsContainer','skeletonList','noResults','showAllBtn','modalOverlay','modalContent','modalCloseBtn','searchStats','practiceBtn','backToTicketsBtn'
+    const [searchInput, searchForm, resultsContainer, skeletonList, noResults, showAllBtn, modalOverlay, modalContent, modalCloseBtn, searchStats, practiceBtn, backToTicketsBtn, rangeBtn, hardBtn] = [
+      'searchInput','searchForm','resultsContainer','skeletonList','noResults','showAllBtn','modalOverlay','modalContent','modalCloseBtn','searchStats','practiceBtn','backToTicketsBtn','rangeBtn','hardBtn'
     ].map(el);
 
     // --- Utils ---
@@ -229,14 +231,15 @@
     const loadJSON = url => fetch(url).then(r=>r.json()).catch(()=>[]);
     async function loadAll() {
       showSkeleton();
-      [ticketsData, practiceData, answersData] = await Promise.all([
+      [ticketsData, practiceData, answersData, hardData] = await Promise.all([
         loadJSON('./tickets.json').then(parseTickets),
         loadJSON('./practice.json'),
-        loadJSON('./answers.json')
+        loadJSON('./answers.json'),
+        loadJSON('./hard.json')
       ]);
       hideSkeleton();
       showAllBtn.classList.remove('hidden');
-      updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0));
+      updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0) + (hardData.length||0));
     }
 
     // --- Search ---
@@ -318,7 +321,6 @@
       }, 200);
     };
     // --- Раздел 35-50 ---
-    let isRangeMode = false;
     rangeBtn.onclick = () => {
       isRangeMode = true;
       searchForm.classList.add('hidden');
@@ -335,13 +337,32 @@
         updateStats(answersData.length, answersData.length);
       }, 200);
     };
+    hardBtn.onclick = () => {
+      isHardMode = true;
+      searchForm.classList.add('hidden');
+      practiceBtn.classList.add('hidden');
+      rangeBtn.classList.add('hidden');
+      hardBtn.classList.add('hidden');
+      backToTicketsBtn.classList.remove('hidden');
+      showAllBtn.classList.add('hidden');
+      noResults.classList.add('hidden');
+      resultsContainer.innerHTML = '';
+      showSkeleton();
+      setTimeout(()=>{
+        hideSkeleton();
+        renderList(hardData, '', false, true);
+        updateStats(hardData.length, hardData.length);
+      }, 200);
+    };
     backToTicketsBtn.onclick = () => {
-      if(isPracticeMode || isRangeMode) {
+      if(isPracticeMode || isRangeMode || isHardMode) {
         isPracticeMode = false;
         isRangeMode = false;
+        isHardMode = false;
         searchForm.classList.remove('hidden');
         practiceBtn.classList.remove('hidden');
         rangeBtn.classList.remove('hidden');
+        hardBtn.classList.remove('hidden');
         backToTicketsBtn.classList.add('hidden');
         resultsContainer.innerHTML = '';
         noResults.classList.add('hidden');
