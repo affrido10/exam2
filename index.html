@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TicketsFinder — поиск экзаменационных билетов</title>
+  <title>TicketsFinder</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -46,10 +46,15 @@
     }
     .search-input {
       width: 100%; border-radius: 0.75rem; border: none;
-      padding: 1.1rem 1.1rem 1.1rem 1.1rem; font-size: 1.1rem;
+      padding: 1.1rem 2.8rem 1.1rem 1.1rem; font-size: 1.1rem;
       background: #23232b; color: #f3f4f6; font-weight: 500;
       outline: none; transition: box-shadow 0.2s;
       box-shadow: 0 2px 8px 0 rgba(80,60,200,0.08);
+    }
+    .search-input::placeholder {
+      color: #a5a5b3;
+      opacity: 1;
+      font-size: 1.05rem;
     }
     .search-input:focus { box-shadow: 0 0 0 2px #6366f1; }
     .search-btn {
@@ -101,40 +106,37 @@
     @keyframes fade-in { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
     @media (max-width: 640px) {
       .search-container { padding: 1.1rem 0.5rem 1rem 0.5rem; }
-      .modal-dialog { padding: 1.2rem 0.5rem 1rem 0.5rem; }
+      .modal-dialog { padding: 1.2rem 0.5rem 1rem 0.5rem; max-height: 92vh; overflow-y: auto; }
+      .results-list { padding-left: 0.1rem; padding-right: 0.1rem; }
+      .modal-dialog { width: 99vw; }
+      .search-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      .search-input { min-width: 0; width: 100%; font-size: 1.05rem; padding-right: 3.2rem; }
+      .search-btn { right: 0.5rem; }
+      .section-btns { flex-wrap: wrap; gap: 0.5rem; /* убираю justify-content: flex-start */ }
+    }
+    @media (max-width: 400px) {
+      .modal-dialog { padding: 0.5rem 0.1rem 0.5rem 0.1rem; }
     }
   </style>
 </head>
 <body>
   <div class="watermark flex items-center justify-center" aria-hidden="true">
-    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:1em;width:1em;min-width:56px;min-height:56px;max-width:12vw;max-height:12vw;margin-right:0.5em;opacity:0.18;">
-      <circle cx="36" cy="36" r="32" fill="#6366f1"/>
-      <path d="M24 36c0-6.627 5.373-12 12-12s12 5.373 12 12-5.373 12-12 12-12-5.373-12-12zm12-8a8 8 0 100 16 8 8 0 000-16z" fill="#fff"/>
-      <path d="M36 28v8l6 3" stroke="#232046" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    TicketsFinder
+    WASSAPP MA BOY
   </div>
   <div id="affridoWatermark" style="position:fixed;left:1.2rem;bottom:1.2rem;z-index:30;color:#818cf8;opacity:0.38;font-size:1.08rem;font-family:monospace;pointer-events:none;user-select:none;letter-spacing:0.04em;">made by affrido10</div>
   <main class="min-h-screen flex flex-col items-center justify-start relative z-10">
     <section class="search-container w-full flex flex-col gap-2">
-      <div class="flex items-center gap-2 mb-2">
-        <div class="flex items-center mr-2">
-          <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:2em;width:2em;min-width:28px;min-height:28px;max-width:7vw;max-height:7vw;margin-right:0.3em;opacity:0.85;">
-            <circle cx="36" cy="36" r="32" fill="#6366f1"/>
-            <path d="M24 36c0-6.627 5.373-12 12-12s12 5.373 12 12-5.373 12-12 12-12-5.373-12-12zm12-8a8 8 0 100 16 8 8 0 000-16z" fill="#fff"/>
-            <path d="M36 28v8l6 3" stroke="#232046" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <form id="searchForm" class="relative flex-1" autocomplete="off" spellcheck="false">
-          <input id="searchInput" class="search-input pr-12" type="text" placeholder="Поиск по номеру, теме или ключевым словам..." aria-label="Поиск билета" autofocus />
+      <div class="search-row flex items-center gap-2 mb-2">
+        <form id="searchForm" class="relative flex-1 min-w-0" autocomplete="off" spellcheck="false">
+          <input id="searchInput" class="search-input pr-12 w-full min-w-0" type="text" placeholder="Поиск по номеру, теме или ключевым словам..." aria-label="Поиск билета" autofocus />
           <button type="submit" class="search-btn" aria-label="Найти"><i class="fas fa-search"></i></button>
         </form>
+      </div>
+      <div class="section-btns flex gap-2 mt-2 mb-1 justify-center">
         <button id="practiceBtn" class="px-4 py-2 rounded-lg bg-indigo-800 text-white font-semibold shadow hover:bg-indigo-900 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-flask mr-1"></i>Практика</button>
         <button id="backToTicketsBtn" class="px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold shadow hover:bg-gray-800 transition text-sm whitespace-nowrap hidden" type="button"><i class="fas fa-arrow-left mr-1"></i>К билетам</button>
-        <!-- Кнопка 35-50 в общем стиле -->
-        <button id="rangeBtn" class="px-4 py-2 rounded-lg bg-amber-700 text-white font-semibold shadow hover:bg-amber-800 transition text-sm whitespace-nowrap ml-2" type="button"><i class="fas fa-list-ol mr-1"></i>35-50</button>
-        <!-- Кнопка сложные 1-7 -->
-        <button id="hardBtn" class="px-4 py-2 rounded-lg bg-rose-700 text-white font-semibold shadow hover:bg-rose-800 transition text-sm whitespace-nowrap ml-2" type="button"><i class="fas fa-brain mr-1"></i>Сложные 1-7</button>
+        <button id="rangeBtn" class="px-4 py-2 rounded-lg bg-amber-700 text-white font-semibold shadow hover:bg-amber-800 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-list-ol mr-1"></i>35-50</button>
+        <button id="hardBtn" class="px-4 py-2 rounded-lg bg-rose-700 text-white font-semibold shadow hover:bg-rose-800 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-brain mr-1"></i>Сложные 1-7</button>
       </div>
       <div id="searchStats" class="mt-2 text-xs text-indigo-200"></div>
     </section>
