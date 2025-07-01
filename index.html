@@ -226,6 +226,7 @@
 
     // --- Render ---
     function renderList(list, query, isPractice, isAnswers) {
+      console.log('renderList вызван:', {list, query, isPractice, isAnswers});
       resultsContainer.innerHTML = '';
       if (!list.length) {
         noResults.innerHTML = `<div class="flex flex-col items-center justify-center"><img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;"><div class="text-lg font-bold mb-2">${isPractice?'Практика не найдена!':isAnswers?'Ответы не найдены!':'Билет не найден!'}</div><div class="text-base text-center">${isPractice?'Нет заданий для практики 🎟️':isAnswers?'Нет подробных ответов':'НЕМА ТАКОГО НЕЕЕЕМААААА 🎟️'}</div></div>`;
@@ -280,7 +281,13 @@
         practiceData = Array.isArray(practice) ? practice : [];
         answersData = Array.isArray(answers) ? answers : [];
         hardData = Array.isArray(hard) ? hard : [];
+        console.log('Загрузка завершена:');
+        console.log('ticketsData:', ticketsData);
+        console.log('practiceData:', practiceData);
+        console.log('answersData:', answersData);
+        console.log('hardData:', hardData);
       } catch (e) {
+        console.error('Ошибка загрузки:', e);
         ticketsData = [];
         practiceData = [];
         answersData = [];
@@ -293,6 +300,7 @@
 
     // --- Search ---
     function doSearch(query) {
+      console.log('doSearch вызван с query:', query);
       resultsContainer.innerHTML = '';
       noResults.classList.add('hidden');
       if (!query || !query.trim()) {
@@ -305,29 +313,33 @@
       setTimeout(() => {
         const q = query.trim().toLowerCase();
         let found = 0;
-        // --- Поиск по номеру билета ---
         const numMatch = query.match(/\d{1,3}/);
         let num = numMatch ? numMatch[0] : null;
-        // --- Поиск по всем разделам ---
+        console.log('q:', q, 'num:', num);
         let resTickets = ticketsData.filter(t => {
           const n = (t.number||'').replace(/[^\d]/g,'');
           return (num && n === num) || (q && ((t.question && t.question.toLowerCase().includes(q)) || (t.answer && t.answer.toLowerCase().includes(q))));
         });
+        console.log('resTickets:', resTickets);
         let resPractice = practiceData.filter(p => {
           const n = String(p["билет"]||'');
           return (num && n === num) || (q && ((p["практика"] && p["практика"].toLowerCase().includes(q)) || (p["инструкция"] && p["инструкция"].toLowerCase().includes(q))));
         });
+        console.log('resPractice:', resPractice);
         let resAnswers = answersData.filter(a => {
           const n = String(a["билет"]||'');
           return (num && n === num) || (q && ((a["вопросы"] && a["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (a["теория"] && a["теория"].toLowerCase().includes(q)) || (a["практика"] && a["практика"].toLowerCase().includes(q))));
         });
+        console.log('resAnswers:', resAnswers);
         let resHard = hardData.filter(h => {
           const n = String(h["билет"]||'').replace(/[^\d]/g,'');
           return (num && n === num) || (q && ((h["вопросы"] && h["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (h["теория"] && h["теория"].toLowerCase().includes(q)) || (h["практика"] && h["практика"].toLowerCase().includes(q))));
         });
+        console.log('resHard:', resHard);
         hideSkeleton();
         found = resTickets.length + resPractice.length + resAnswers.length + resHard.length;
         if (resTickets.length) {
+          console.log('Рендер билетов:', resTickets);
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-2';
           header.textContent = 'Билеты';
@@ -335,6 +347,7 @@
           renderList(resTickets, query, false, false);
         }
         if (resPractice.length) {
+          console.log('Рендер практика:', resPractice);
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
           header.textContent = 'Практика';
@@ -342,6 +355,7 @@
           renderList(resPractice, query, true, false);
         }
         if (resAnswers.length) {
+          console.log('Рендер ответы:', resAnswers);
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
           header.textContent = 'Ответы';
@@ -349,6 +363,7 @@
           renderList(resAnswers, query, false, true);
         }
         if (resHard.length) {
+          console.log('Рендер сложные:', resHard);
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
           header.textContent = 'Сложные 1-7';
@@ -356,9 +371,11 @@
           renderList(resHard, query, false, true);
         }
         if (!found) {
+          console.log('Ничего не найдено');
           renderList([], query, false, false);
         }
         updateStats(found, ticketsData.length + practiceData.length + answersData.length + hardData.length);
+        console.log('doSearch завершён, найдено:', found);
       }, 100);
     }
 
