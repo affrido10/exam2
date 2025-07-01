@@ -258,27 +258,37 @@
           card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${highlight(item["билет"], query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item["практика"], query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item["инструкция"]||'').replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,''), query).substring(0,120)}...</p><div class="flex justify-end items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button></div>`;
           card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${item["билет"]}</span></div><h4 class="text-lg font-bold mb-3">${item["практика"]}</h4><div class="text-base mb-6 whitespace-pre-line">${item["инструкция"]}</div>`);
         } else {
-          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlight(item.number||'', query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item.question||'', query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item.answer||'').substring(0,100), query)}...</p><div class="flex justify-between items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button></div>`;
-          card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${item.number}</span></div><h4 class="text-lg font-bold mb-3">${item.question}</h4><div class="text-base mb-6 whitespace-pre-line">${item.answer}</div>`);
+          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Билет ${highlight(item["№"], query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item["Вопрос"], query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item["Ответ"]||'').substring(0,100), query)}...</p><div class="flex justify-between items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button></div>`;
+          card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Билет ${item["№"]}</span></div><h4 class="text-lg font-bold mb-3">${item["Вопрос"]}</h4><div class="text-base mb-6 whitespace-pre-line">${item["Ответ"]}</div>`);
         }
         resultsContainer.appendChild(card);
       });
     }
 
     // --- Data Loaders ---
-    const parseTickets = raw => Array.isArray(raw) ? raw.map((t,i) => ({ number: t["id"]?`Билет ${t["id"]}`:t["№"]?`Билет ${t["№"]}`:(t.number||`Билет ${i+1}`), question: t.question||t["Вопрос"]||'', answer: t.answer||t["Ответ"]||'' })) : [];
-    const loadJSON = url => fetch(url).then(r=>r.json()).catch(()=>[]);
+    // Универсальный парсер для билетов (единая структура)
+    const parseTickets = raw => Array.isArray(raw) ? raw.map((t,i) => ({
+      "№": t.id || t["№"] || (i+1),
+      "Вопрос": t.question || t["Вопрос"] || '',
+      "Ответ": t.answer || t["Ответ"] || ''
+    })) : [];
+    // Универсальный парсер для practice (единая структура)
+    const parsePractice = raw => Array.isArray(raw) ? raw.map((p,i) => ({
+      "билет": p["билет"] || (i+1),
+      "практика": p["практика"] || '',
+      "инструкция": p["инструкция"] || ''
+    })) : [];
     async function loadAll() {
       showSkeleton();
       try {
         const [tickets, practice, answers, hard] = await Promise.all([
           loadJSON('./tickets.json').then(parseTickets),
-          loadJSON('./practice.json'),
+          loadJSON('./practice.json').then(parsePractice),
           loadJSON('./answers.json'),
           loadJSON('./hard.json')
         ]);
         ticketsData = tickets || [];
-        practiceData = Array.isArray(practice) ? practice : [];
+        practiceData = practice || [];
         answersData = Array.isArray(answers) ? answers : [];
         hardData = Array.isArray(hard) ? hard : [];
         console.log('Загрузка завершена:');
@@ -317,8 +327,8 @@
         let num = numMatch ? numMatch[0] : null;
         console.log('q:', q, 'num:', num);
         let resTickets = ticketsData.filter(t => {
-          const n = (t.number||'').replace(/[^\d]/g,'');
-          return (num && n === num) || (q && ((t.question && t.question.toLowerCase().includes(q)) || (t.answer && t.answer.toLowerCase().includes(q))));
+          const n = String(t["№"]||'');
+          return (num && n === num) || (q && ((t["Вопрос"] && t["Вопрос"].toLowerCase().includes(q)) || (t["Ответ"] && t["Ответ"].toLowerCase().includes(q))));
         });
         console.log('resTickets:', resTickets);
         let resPractice = practiceData.filter(p => {
