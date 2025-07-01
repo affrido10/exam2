@@ -196,10 +196,32 @@
       if(currentSection==='hard') list = hardData;
       // Фильтрация по поиску
       if(q) {
-        if(currentSection==='tickets') list = list.filter(t => t.id===q || t.Вопрос.toLowerCase().includes(q) || t.Ответ.toLowerCase().includes(q));
-        if(currentSection==='practice') list = list.filter(p => p.билет===q || p.практика?.toLowerCase().includes(q) || p.инструкция?.toLowerCase().includes(q));
-        if(currentSection==='answers') list = list.filter(a => String(a.билет)===q || a.вопросы?.some(v=>v.toLowerCase().includes(q)) || a.теория?.toLowerCase().includes(q) || a.практика?.toLowerCase().includes(q));
-        if(currentSection==='hard') list = list.filter(h => h.билет?.toLowerCase().includes(q) || h.вопросы?.some(v=>v.toLowerCase().includes(q)) || h.теория?.toLowerCase().includes(q) || h.практика?.toLowerCase().includes(q));
+        if(currentSection==='tickets') list = list.filter(t => {
+          const id = (t.id!==undefined ? String(t.id) : '').toLowerCase();
+          const vopros = (t.Вопрос||'').toLowerCase();
+          const otvet = (t.Ответ||'').toLowerCase();
+          return id===q || id.includes(q) || vopros.includes(q) || otvet.includes(q);
+        });
+        if(currentSection==='practice') list = list.filter(p => {
+          const id = (p.билет!==undefined ? String(p.билет) : '').toLowerCase();
+          const praktika = (p.практика||'').toLowerCase();
+          const instr = (p.инструкция||'').toLowerCase();
+          return id===q || id.includes(q) || praktika.includes(q) || instr.includes(q);
+        });
+        if(currentSection==='answers') list = list.filter(a => {
+          const id = (a.билет!==undefined ? String(a.билет) : '').toLowerCase();
+          const voprosy = Array.isArray(a.вопросы) ? a.вопросы.map(v=>v.toLowerCase()).join(' ') : '';
+          const teoriya = (a.теория||'').toLowerCase();
+          const praktika = (a.практика||'').toLowerCase();
+          return id===q || id.includes(q) || voprosy.includes(q) || teoriya.includes(q) || praktika.includes(q);
+        });
+        if(currentSection==='hard') list = list.filter(h => {
+          const id = (h.билет!==undefined ? String(h.билет) : '').toLowerCase();
+          const voprosy = Array.isArray(h.вопросы) ? h.вопросы.map(v=>v.toLowerCase()).join(' ') : '';
+          const teoriya = (h.теория||'').toLowerCase();
+          const praktika = (h.практика||'').toLowerCase();
+          return id===q || id.includes(q) || voprosy.includes(q) || teoriya.includes(q) || praktika.includes(q);
+        });
       }
       // Фильтр по типу
       if(filterType==='theory') {
