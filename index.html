@@ -273,17 +273,15 @@
     }
 
     // --- Data Loaders ---
-    // Универсальный парсер для билетов (единая структура)
     const parseTickets = raw => Array.isArray(raw) ? raw.map((t,i) => ({
-      "id": t.id || t["id"] || (i+1),
-      "Вопрос": t.question || t["Вопрос"] || '',
-      "Ответ": t.answer || t["Ответ"] || ''
+      id: String(t.id || i+1),
+      Вопрос: t.Вопрос || t.question || '',
+      Ответ: t.Ответ || t.answer || ''
     })) : [];
-    // Универсальный парсер для practice (единая структура)
     const parsePractice = raw => Array.isArray(raw) ? raw.map((p,i) => ({
-      "билет": p["билет"] || (i+1),
-      "практика": p["практика"] || '',
-      "инструкция": p["инструкция"] || ''
+      билет: String(p.билет || i+1),
+      практика: p.практика || '',
+      инструкция: p.инструкция || ''
     })) : [];
     async function loadAll() {
       showSkeleton();
@@ -332,38 +330,38 @@
         let res = [];
         if (isPracticeMode) {
           res = practiceData.filter(p =>
-            (p["билет"] && String(p["билет"]).toLowerCase() === q) ||
-            (p["практика"] && p["практика"].toLowerCase().includes(q)) ||
-            (p["инструкция"] && p["инструкция"].toLowerCase().includes(q))
+            p.билет.toLowerCase() === q ||
+            p.практика.toLowerCase().includes(q) ||
+            p.инструкция.toLowerCase().includes(q)
           );
           hideSkeleton();
           found = res.length;
           renderList(res, query, true, false);
         } else if (isRangeMode) {
           res = answersData.filter(a =>
-            (a["билет"] && String(a["билет"]).toLowerCase() === q) ||
-            (a["вопросы"] && a["вопросы"].some(qs=>qs.toLowerCase().includes(q))) ||
-            (a["теория"] && a["теория"].toLowerCase().includes(q)) ||
-            (a["практика"] && a["практика"].toLowerCase().includes(q))
+            String(a.билет).toLowerCase() === q ||
+            (Array.isArray(a.вопросы) && a.вопросы.some(v=>v.toLowerCase().includes(q))) ||
+            (a.теория && a.теория.toLowerCase().includes(q)) ||
+            (a.практика && a.практика.toLowerCase().includes(q))
           );
           hideSkeleton();
           found = res.length;
           renderList(res, query, false, true);
         } else if (isHardMode) {
           res = hardData.filter(h =>
-            (h["билет"] && String(h["билет"]).toLowerCase() === q) ||
-            (h["вопросы"] && h["вопросы"].some(qs=>qs.toLowerCase().includes(q))) ||
-            (h["теория"] && h["теория"].toLowerCase().includes(q)) ||
-            (h["практика"] && h["практика"].toLowerCase().includes(q))
+            (h.билет && h.билет.toLowerCase().includes(q)) ||
+            (Array.isArray(h.вопросы) && h.вопросы.some(v=>v.toLowerCase().includes(q))) ||
+            (h.теория && h.теория.toLowerCase().includes(q)) ||
+            (h.практика && h.практика.toLowerCase().includes(q))
           );
           hideSkeleton();
           found = res.length;
           renderList(res, query, false, true);
         } else {
           res = ticketsData.filter(t =>
-            (t["id"] && String(t["id"]).toLowerCase() === q) ||
-            (t["Вопрос"] && t["Вопрос"].toLowerCase().includes(q)) ||
-            (t["Ответ"] && t["Ответ"].toLowerCase().includes(q))
+            t.id.toLowerCase() === q ||
+            t.Вопрос.toLowerCase().includes(q) ||
+            t.Ответ.toLowerCase().includes(q)
           );
           hideSkeleton();
           found = res.length;
@@ -465,7 +463,7 @@
     // --- Easter Egg ---
     const easterEggBtn = document.getElementById('easterEggBtn');
     easterEggBtn.onclick = () => {
-      openModal('<div class="flex flex-col items-center"><img src="https://cataas.com/cat/says/Удачи%20на%20экзамене!" alt="Котик" style="max-width:220px;border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;"><div class="text-lg font-bold mb-2">Котик желает удачи!</div><div class="text-base text-center">Пусть всё получится — и у тебя, и у друга!</div></div>');
+      openModal('<div class="flex flex-col items-center"><img src="https://cataas.com/cat/says/Удачи%20на%20экзамене!" alt="Котик" style="max-width:220px;border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;"><div class="text-lg font-bold mb-2">Котик желает удачи!</div><div class="text-base text-center">сак ма болс тупая дура П.С.А.</div></div>');
     };
     // --- Audio Hint ---
     let audioHintTimeout;
