@@ -242,19 +242,19 @@
               <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${highlight(item["билет"], query)}</span>
             </div>
             <h4 class="text-lg font-semibold mb-2">${item["вопросы"].map(q=>highlight(q,query)).join('<br>')}</h4>
-            <p class="text-gray-400 text-sm mb-2"><b>Теория:</b> ${highlight(item["теория"], query)}</p>
-            <p class="text-gray-400 text-sm mb-3"><b>Практика:</b> ${highlight(item["практика"], query)}</p>
+            <p class="text-gray-400 text-sm mb-2"><b>Теория:</b> ${highlight(item["теория"]||'', query)}</p>
+            <p class="text-gray-400 text-sm mb-3"><b>Практика:</b> ${highlight(item["практика"]||'', query)}</p>
             <div class="flex justify-end items-center">
               <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button>
             </div>`;
           card.querySelector('.read-btn').onclick = () => openModal(
             `<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${item["билет"]}</span></div>
             <h4 class="text-lg font-bold mb-3">${item["вопросы"].map(q=>highlight(q,query)).join('<br>')}</h4>
-            <div class="text-base mb-4 whitespace-pre-line"><b>Теория:</b><br>${highlight(item["теория"], query)}</div>
-            <div class="text-base mb-6 whitespace-pre-line"><b>Практика:</b><br>${highlight(item["практика"], query)}</div>`
+            <div class="text-base mb-4 whitespace-pre-line"><b>Теория:</b><br>${highlight(item["теория"]||'', query)}</div>
+            <div class="text-base mb-6 whitespace-pre-line"><b>Практика:</b><br>${highlight(item["практика"]||'', query)}</div>`
           );
         } else if (isPractice) {
-          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${highlight(item["билет"], query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item["практика"], query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight(item["инструкция"].replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,''), query).substring(0,120)}...</p><div class="flex justify-end items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button></div>`;
+          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${highlight(item["билет"], query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item["практика"], query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item["инструкция"]||'').replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,''), query).substring(0,120)}...</p><div class="flex justify-end items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button></div>`;
           card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${item["билет"]}</span></div><h4 class="text-lg font-bold mb-3">${item["практика"]}</h4><div class="text-base mb-6 whitespace-pre-line">${item["инструкция"]}</div>`);
         } else {
           card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">${highlight(item.number||'', query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item.question||'', query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item.answer||'').substring(0,100), query)}...</p><div class="flex justify-between items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button></div>`;
@@ -282,7 +282,7 @@
 
     // --- Search ---
     function doSearch(query) {
-      if (!ticketsData.length && !answersData.length) return;
+      if (!ticketsData.length && !answersData.length && !practiceData.length && !hardData.length) return;
       if (query && query.toLowerCase().includes('котик')) {
         openModal(`<div class="flex flex-col items-center justify-center"><img src="https://cataas.com/cat/says/Мяу?width=320&height=220&fontSize=32" alt="Котик" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;"><div class="text-lg font-bold mb-2">Пасхалка!</div><div class="text-base text-center">Вот тебе котик для настроения 🐾</div></div>`);
         searchInput.value = '';
@@ -292,25 +292,30 @@
         resultsContainer.innerHTML = '';
         noResults.classList.add('hidden');
         showAllBtn.classList.remove('hidden');
-        updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0));
+        updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0) + (hardData.length||0));
         return;
       }
       showAllBtn.classList.add('hidden');
       showSkeleton();
       setTimeout(()=>{
-        let resTickets = [], resPractice = [], resAnswers = [];
+        let resTickets = [], resPractice = [], resAnswers = [], resHard = [];
         const numMatch = query.match(/(билет\s*)?(\d{1,3})/i);
         if(numMatch) {
           const num = numMatch[2];
           resTickets = ticketsData.filter(t=>t.number.replace(/[^\d]/g,'')===num);
           resPractice = practiceData.filter(p=>String(p["билет"])===num);
           resAnswers = answersData.filter(a=>String(a["билет"])===num);
+          resHard = hardData.filter(h=>{
+            const n = String(h["билет"]).replace(/[^\d]/g,'')
+            return n === num;
+          });
         }
-        if(!resTickets.length && !resPractice.length && !resAnswers.length) {
+        if(!resTickets.length && !resPractice.length && !resAnswers.length && !resHard.length) {
           const words = query.toLowerCase().split(/\s+/).filter(Boolean);
           resTickets = ticketsData.filter(t=>words.every(w=>(t.question+t.answer).toLowerCase().includes(w)));
           resPractice = practiceData.filter(p=>words.every(w=>(p["практика"]+p["инструкция"]).toLowerCase().includes(w)));
-          resAnswers = answersData.filter(a=>words.some(w=>a["вопросы"].some(q=>q.toLowerCase().includes(w))||a["теория"].toLowerCase().includes(w)||a["практика"].toLowerCase().includes(w)));
+          resAnswers = answersData.filter(a=>words.some(w=>a["вопросы"].some(q=>q.toLowerCase().includes(w))||(a["теория"]||'').toLowerCase().includes(w)||(a["практика"]||'').toLowerCase().includes(w)));
+          resHard = hardData.filter(h=>words.some(w=>h["вопросы"].some(q=>q.toLowerCase().includes(w))||(h["теория"]||'').toLowerCase().includes(w)||(h["практика"]||'').toLowerCase().includes(w)));
         }
         hideSkeleton();
         if(resTickets.length) {
@@ -334,10 +339,17 @@
           resultsContainer.appendChild(header);
           renderList(resAnswers, query, false, true);
         }
-        if(!resTickets.length && !resPractice.length && !resAnswers.length) {
+        if(resHard.length) {
+          const header = document.createElement('div');
+          header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
+          header.textContent = 'Сложные 1-7';
+          resultsContainer.appendChild(header);
+          renderList(resHard, query, false, true);
+        }
+        if(!resTickets.length && !resPractice.length && !resAnswers.length && !resHard.length) {
           renderList([], query, false, false);
         }
-        updateStats(resTickets.length+resPractice.length+resAnswers.length, ticketsData.length + (practiceData.length||0) + (answersData.length||0));
+        updateStats(resTickets.length+resPractice.length+resAnswers.length+resHard.length, ticketsData.length + (practiceData.length||0) + (answersData.length||0) + (hardData.length||0));
       }, 300);
     }
 
