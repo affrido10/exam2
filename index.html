@@ -275,6 +275,23 @@
       document.getElementById('modalOverlay').classList.remove('active');
       document.body.style.overflow = '';
     }
+    // --- Парсинг tickets и practice ---
+    function parseTickets(arr) {
+      // Формируем id и Вопрос для каждого билета
+      return arr.map((item, i) => ({
+        id: i+1,
+        Вопрос: `Вопрос ${i+1}`,
+        ...item
+      }));
+    }
+    function parsePractice(arr) {
+      // Формируем билет и практика для каждого задания
+      return arr.map((item, i) => ({
+        билет: i+1,
+        практика: `Практика ${i+1}`,
+        ...item
+      }));
+    }
     // --- Init ---
     window.addEventListener('load', loadAll);
   </script>
