@@ -74,8 +74,8 @@
     <header class="header">
       <h1>Экзаменационные билеты</h1>
       <div class="search-row">
-        <input id="searchInput" class="search-input" type="text" placeholder="Поиск по номеру или ключевым словам..." />
-        <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i></button>
+        <input id="universalSearchInput" class="search-input" type="text" placeholder="Поиск по номеру билета или ключевой фразе..." />
+        <button id="universalSearchBtn" class="search-btn"><i class="fas fa-search"></i></button>
       </div>
       <div class="section-btns">
         <button id="ticketsSection" class="section-btn active">Билеты</button>
@@ -180,21 +180,21 @@
     document.getElementById('answersSection').onclick = () => { currentSection = 'answers'; setActiveSection(); renderResults(); };
     document.getElementById('hardSection').onclick = () => { currentSection = 'hard'; setActiveSection(); renderResults(); };
     document.getElementById('filterType').onchange = e => { filterType = e.target.value; renderResults(); };
+    document.getElementById('universalSearchBtn').onclick = () => renderResults();
+    document.getElementById('universalSearchInput').oninput = () => renderResults();
     function setActiveSection() {
       document.querySelectorAll('.section-btn').forEach(btn=>btn.classList.remove('active'));
       document.getElementById(currentSection+'Section').classList.add('active');
     }
-    // --- Search ---
-    document.getElementById('searchBtn').onclick = () => renderResults();
-    document.getElementById('searchInput').oninput = e => renderResults();
+    // --- Поиск по всем разделам ---
     function renderResults() {
-      const q = document.getElementById('searchInput').value.trim().toLowerCase();
       let list = [];
       if(currentSection==='tickets') list = ticketsData;
       if(currentSection==='practice') list = practiceData;
       if(currentSection==='answers') list = answersData;
       if(currentSection==='hard') list = hardData;
-      // Фильтрация по поиску
+      // Универсальный поиск
+      const q = document.getElementById('universalSearchInput').value.trim().toLowerCase();
       if(q) {
         if(currentSection==='tickets') list = list.filter(t => {
           const id = (t.id!==undefined ? String(t.id) : '').toLowerCase();
@@ -222,17 +222,6 @@
           const praktika = (h.практика||'').toLowerCase();
           return id===q || id.includes(q) || voprosy.includes(q) || teoriya.includes(q) || praktika.includes(q);
         });
-      }
-      // Фильтр по типу
-      if(filterType==='theory') {
-        if(currentSection==='answers'||currentSection==='hard') list = list.filter(x=>x.теория);
-        if(currentSection==='tickets') list = list.filter(x=>x.Вопрос||x.Ответ);
-        if(currentSection==='practice') list = [];
-      }
-      if(filterType==='practice') {
-        if(currentSection==='answers'||currentSection==='hard') list = list.filter(x=>x.практика);
-        if(currentSection==='practice') list = list.filter(x=>x.инструкция);
-        if(currentSection==='tickets') list = [];
       }
       renderList(list);
     }
