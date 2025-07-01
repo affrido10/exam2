@@ -293,7 +293,6 @@
 
     // --- Search ---
     function doSearch(query) {
-      // Очистка
       resultsContainer.innerHTML = '';
       noResults.classList.add('hidden');
       if (!query || !query.trim()) {
@@ -312,19 +311,19 @@
         // --- Поиск по всем разделам ---
         let resTickets = ticketsData.filter(t => {
           const n = (t.number||'').replace(/[^\d]/g,'');
-          return (num && n === num) || (t.question && t.question.toLowerCase().includes(q)) || (t.answer && t.answer.toLowerCase().includes(q));
+          return (num && n === num) || (q && ((t.question && t.question.toLowerCase().includes(q)) || (t.answer && t.answer.toLowerCase().includes(q))));
         });
         let resPractice = practiceData.filter(p => {
           const n = String(p["билет"]||'');
-          return (num && n === num) || (p["практика"] && p["практика"].toLowerCase().includes(q)) || (p["инструкция"] && p["инструкция"].toLowerCase().includes(q));
+          return (num && n === num) || (q && ((p["практика"] && p["практика"].toLowerCase().includes(q)) || (p["инструкция"] && p["инструкция"].toLowerCase().includes(q))));
         });
         let resAnswers = answersData.filter(a => {
           const n = String(a["билет"]||'');
-          return (num && n === num) || (a["вопросы"] && a["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (a["теория"] && a["теория"].toLowerCase().includes(q)) || (a["практика"] && a["практика"].toLowerCase().includes(q));
+          return (num && n === num) || (q && ((a["вопросы"] && a["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (a["теория"] && a["теория"].toLowerCase().includes(q)) || (a["практика"] && a["практика"].toLowerCase().includes(q))));
         });
         let resHard = hardData.filter(h => {
           const n = String(h["билет"]||'').replace(/[^\d]/g,'');
-          return (num && n === num) || (h["вопросы"] && h["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (h["теория"] && h["теория"].toLowerCase().includes(q)) || (h["практика"] && h["практика"].toLowerCase().includes(q));
+          return (num && n === num) || (q && ((h["вопросы"] && h["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (h["теория"] && h["теория"].toLowerCase().includes(q)) || (h["практика"] && h["практика"].toLowerCase().includes(q))));
         });
         hideSkeleton();
         found = resTickets.length + resPractice.length + resAnswers.length + resHard.length;
