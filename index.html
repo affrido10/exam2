@@ -176,8 +176,7 @@
       </div>
       <div id="searchStats" class="mt-2 text-xs text-indigo-200"></div>
       <div class="flex flex-col items-center mt-2">
-        <span class="text-xs text-gray-400">Совет: ищи по ключевым словам, чтобы быстро найти нужный ответ для друга!</span>
-        <span class="text-xs text-gray-400 mt-1">Для микронаушника: кликни на билет — ответ откроется крупно и удобно для чтения с телефона.</span>
+        <!-- Подсказки убраны по просьбе пользователя -->
       </div>
     </section>
     <section class="results-list w-full px-2" id="resultsSection">
@@ -333,6 +332,7 @@
         let res = [];
         if (isPracticeMode) {
           res = practiceData.filter(p =>
+            (p["билет"] && String(p["билет"]).toLowerCase() === q) ||
             (p["практика"] && p["практика"].toLowerCase().includes(q)) ||
             (p["инструкция"] && p["инструкция"].toLowerCase().includes(q))
           );
@@ -341,6 +341,7 @@
           renderList(res, query, true, false);
         } else if (isRangeMode) {
           res = answersData.filter(a =>
+            (a["билет"] && String(a["билет"]).toLowerCase() === q) ||
             (a["вопросы"] && a["вопросы"].some(qs=>qs.toLowerCase().includes(q))) ||
             (a["теория"] && a["теория"].toLowerCase().includes(q)) ||
             (a["практика"] && a["практика"].toLowerCase().includes(q))
@@ -350,6 +351,7 @@
           renderList(res, query, false, true);
         } else if (isHardMode) {
           res = hardData.filter(h =>
+            (h["билет"] && String(h["билет"]).toLowerCase() === q) ||
             (h["вопросы"] && h["вопросы"].some(qs=>qs.toLowerCase().includes(q))) ||
             (h["теория"] && h["теория"].toLowerCase().includes(q)) ||
             (h["практика"] && h["практика"].toLowerCase().includes(q))
@@ -359,6 +361,7 @@
           renderList(res, query, false, true);
         } else {
           res = ticketsData.filter(t =>
+            (t["№"] && String(t["№"]).toLowerCase() === q) ||
             (t["Вопрос"] && t["Вопрос"].toLowerCase().includes(q)) ||
             (t["Ответ"] && t["Ответ"].toLowerCase().includes(q))
           );
