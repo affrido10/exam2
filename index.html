@@ -306,8 +306,8 @@
         const q = query.trim().toLowerCase();
         let found = 0;
         // --- Поиск по номеру билета ---
-        const numMatch = q.match(/(билет\s*)?(\d{1,3})/i);
-        let num = numMatch ? numMatch[2] : null;
+        const numMatch = query.match(/\d{1,3}/);
+        let num = numMatch ? numMatch[0] : null;
         // --- Поиск по всем разделам ---
         let resTickets = ticketsData.filter(t => {
           const n = (t.number||'').replace(/[^\d]/g,'');
