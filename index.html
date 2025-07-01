@@ -269,15 +269,26 @@
     const loadJSON = url => fetch(url).then(r=>r.json()).catch(()=>[]);
     async function loadAll() {
       showSkeleton();
-      [ticketsData, practiceData, answersData, hardData] = await Promise.all([
-        loadJSON('./tickets.json').then(parseTickets),
-        loadJSON('./practice.json'),
-        loadJSON('./answers.json'),
-        loadJSON('./hard.json')
-      ]);
+      try {
+        const [tickets, practice, answers, hard] = await Promise.all([
+          loadJSON('./tickets.json').then(parseTickets),
+          loadJSON('./practice.json'),
+          loadJSON('./answers.json'),
+          loadJSON('./hard.json')
+        ]);
+        ticketsData = tickets || [];
+        practiceData = Array.isArray(practice) ? practice : [];
+        answersData = Array.isArray(answers) ? answers : [];
+        hardData = Array.isArray(hard) ? hard : [];
+      } catch (e) {
+        ticketsData = [];
+        practiceData = [];
+        answersData = [];
+        hardData = [];
+      }
       hideSkeleton();
       showAllBtn.classList.remove('hidden');
-      updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0) + (hardData.length||0));
+      updateStats(0, ticketsData.length + practiceData.length + answersData.length + hardData.length);
     }
 
     // --- Search ---
