@@ -15,10 +15,9 @@
     html, body { height: 100%; min-height: 100%; }
     body {
       min-height: 100vh;
-      background: linear-gradient(135deg, #18181b 0%, #232046 100%);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
       color: #e5e7eb;
-      transition: background 0.7s cubic-bezier(0.4,0,0.2,1);
+      background: linear-gradient(135deg, #18181b 0%, #232046 100%);
       overflow-x: hidden;
     }
     .watermark {
@@ -29,580 +28,242 @@
       text-align: center; letter-spacing: 0.05em; line-height: 1.1;
       transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
     }
-    #affridoWatermark {
-      position: fixed; left: 1.2rem; bottom: 1.2rem; z-index: 30;
-      color: #818cf8; opacity: 0.38; font-size: 1.08rem;
-      font-family: monospace; pointer-events: none; user-select: none;
-      letter-spacing: 0.04em;
-    }
-    .search-container {
-      background: linear-gradient(135deg, #232046 0%, #312e81 100%);
-      border-radius: 1.25rem;
-      box-shadow: 0 4px 32px 0 rgba(36,32,70,0.13);
-      padding: 2rem 1.5rem 1.5rem 1.5rem;
-      margin: 2.5rem auto 1.5rem auto;
-      max-width: 540px;
-      position: relative;
-    }
-    .search-input {
-      width: 100%; border-radius: 0.75rem; border: none;
-      padding: 1.1rem 2.8rem 1.1rem 1.1rem; font-size: 1.1rem;
-      background: #23232b; color: #f3f4f6; font-weight: 500;
-      outline: none; transition: box-shadow 0.2s;
-      box-shadow: 0 2px 8px 0 rgba(80,60,200,0.08);
-    }
-    .search-input::placeholder {
-      color: #a5a5b3;
-      opacity: 1;
-      font-size: 1.05rem;
-    }
-    .search-input:focus { box-shadow: 0 0 0 2px #6366f1; }
-    .search-btn {
-      position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%);
-      background: #6366f1; color: #fff; border: none; border-radius: 9999px;
-      width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem; box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-    .search-btn:hover { background: #4f46e5; }
-    .results-list { margin: 0 auto; max-width: 700px; }
-    .ticket-card {
-      background: #23232b; color: #e5e7eb; border-radius: 1.1rem;
-      border: 1.5px solid #2d2d36; margin-bottom: 1.2rem;
-      box-shadow: 0 4px 16px 0 rgba(36,32,70,0.10);
-      transition: box-shadow 0.25s, transform 0.18s;
-      overflow: hidden; position: relative;
-    }
+    .main-container { position: relative; z-index: 1; min-height: 100vh; }
+    .header { max-width: 700px; margin: 0 auto; padding: 2rem 1rem 1rem 1rem; }
+    .header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 1.2rem; text-align: center; }
+    .search-row { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+    .search-input { flex: 1; border-radius: 0.75rem; border: none; padding: 1rem 1.1rem; font-size: 1.1rem; background: #23232b; color: #f3f4f6; font-weight: 500; outline: none; }
+    .search-btn { background: #6366f1; color: #fff; border: none; border-radius: 9999px; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .section-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1.2rem; }
+    .section-btn { padding: 0.6rem 1.2rem; border-radius: 0.7rem; font-weight: 600; border: none; background: #232046; color: #fff; cursor: pointer; transition: background 0.2s; }
+    .section-btn.active, .section-btn:hover { background: #6366f1; color: #fff; }
+    .filter-select { border-radius: 0.5rem; padding: 0.4rem 0.8rem; font-size: 1rem; margin-left: 1rem; }
+    .results-list { max-width: 700px; margin: 0 auto; padding: 0 1rem 2rem 1rem; }
+    .ticket-card { background: #23232b; color: #e5e7eb; border-radius: 1.1rem; border: 1.5px solid #2d2d36; margin-bottom: 1.2rem; box-shadow: 0 4px 16px 0 rgba(36,32,70,0.10); transition: box-shadow 0.25s, transform 0.18s; overflow: hidden; position: relative; }
     .ticket-card:hover { box-shadow: 0 10px 32px 0 rgba(36,32,70,0.18); transform: translateY(-4px) scale(1.012); }
-    .ticket-card .read-btn {
-      color: #818cf8; background: none; border: none; font-weight: 500;
-      cursor: pointer; font-size: 1rem; transition: color 0.18s;
-    }
+    .ticket-card .read-btn { color: #818cf8; background: none; border: none; font-weight: 500; cursor: pointer; font-size: 1rem; transition: color 0.18s; }
     .ticket-card .read-btn:hover { color: #a5b4fc; }
-    .skeleton {
-      background: linear-gradient(90deg, #232046 25%, #312e81 50%, #232046 75%);
-      background-size: 200% 100%; animation: skeleton 1.2s infinite linear;
-      border-radius: 1.1rem; height: 120px; margin-bottom: 1.2rem;
-    }
-    @keyframes skeleton { 0% {background-position: 200% 0;} 100% {background-position: -200% 0;} }
-    .modal-overlay {
-      position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
-      background: rgba(24,24,27,0.82); z-index: 50; display: flex;
-      align-items: center; justify-content: center; opacity: 0; pointer-events: none;
-      transition: opacity 0.25s;
-    }
+    .modal-overlay { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(24,24,27,0.82); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-dialog {
-      background: #23232b; color: #e5e7eb; border-radius: 1.2rem;
-      max-width: 420px; width: 96vw; padding: 2.2rem 1.5rem 1.5rem 1.5rem;
-      box-shadow: 0 8px 48px 0 rgba(36,32,70,0.22);
-      position: relative; animation: fade-in 0.32s cubic-bezier(0.4,0,0.2,1);
-      display: flex;
-      flex-direction: column;
-    }
-    .modal-close {
-      position: absolute; right: 1.1rem; top: 1.1rem; background: none; border: none;
-      color: #a1a1aa; font-size: 1.5rem; cursor: pointer; transition: color 0.18s;
-    }
+    .modal-dialog { background: #23232b; color: #e5e7eb; border-radius: 1.2rem; max-width: 520px; width: 96vw; padding: 2.2rem 1.5rem 1.5rem 1.5rem; box-shadow: 0 8px 48px 0 rgba(36,32,70,0.22); position: relative; animation: fade-in 0.32s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; }
+    .modal-close { position: absolute; right: 1.1rem; top: 1.1rem; background: none; border: none; color: #a1a1aa; font-size: 1.5rem; cursor: pointer; transition: color 0.18s; }
     .modal-close:hover { color: #fff; }
-    #modalContent {
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    #modalContent::-webkit-scrollbar {
-      width: 8px;
-      background: transparent;
-    }
-    #modalContent::-webkit-scrollbar-thumb {
-      background: linear-gradient(120deg, #818cf8 40%, #6366f1 100%);
-      border-radius: 8px;
-      min-height: 32px;
-    }
-    #modalContent::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(120deg, #a5b4fc 40%, #6366f1 100%);
-    }
-    #modalContent {
-      scrollbar-width: thin;
-      scrollbar-color: #818cf8 #232046;
-    }
-    /* Для всей страницы — тоже стильный скроллбар */
-    body::-webkit-scrollbar {
-      width: 10px;
-      background: transparent;
-    }
-    body::-webkit-scrollbar-thumb {
-      background: #232046;
-      border-radius: 8px;
-    }
-    body {
-      scrollbar-width: thin;
-      scrollbar-color: #232046 #18181b;
-    }
-    @keyframes fade-in { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .modal-content { max-height: 60vh; overflow-y: auto; }
+    .modal-content::-webkit-scrollbar { width: 8px; background: transparent; }
+    .modal-content::-webkit-scrollbar-thumb { background: linear-gradient(120deg, #818cf8 40%, #6366f1 100%); border-radius: 8px; min-height: 32px; }
+    .modal-content { scrollbar-width: thin; scrollbar-color: #818cf8 #232046; }
     @media (max-width: 640px) {
-      .search-container { padding: 1.1rem 0.5rem 1rem 0.5rem; }
+      .header { padding: 1.1rem 0.5rem 1rem 0.5rem; }
       .modal-dialog { padding: 1.2rem 0.5rem 1rem 0.5rem; max-height: 92vh; }
-      #modalContent { max-height: 80vh; }
       .results-list { padding-left: 0.1rem; padding-right: 0.1rem; }
       .modal-dialog { width: 99vw; }
       .search-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
       .search-input { min-width: 0; width: 100%; font-size: 1.05rem; padding-right: 3.2rem; }
       .search-btn { right: 0.5rem; }
-      .section-btns { flex-wrap: wrap; gap: 0.5rem; /* убираю justify-content: flex-start */ }
+      .section-btns { flex-wrap: wrap; gap: 0.5rem; }
     }
     @media (max-width: 400px) {
       .modal-dialog { padding: 0.5rem 0.1rem 0.5rem 0.1rem; }
     }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
   </style>
 </head>
 <body>
-  <div class="watermark flex items-center justify-center" aria-hidden="true">
-    WASSAPP MA BOY
-  </div>
-  <div id="affridoWatermark" style="position:fixed;left:1.2rem;bottom:1.2rem;z-index:30;color:#818cf8;opacity:0.38;font-size:1.08rem;font-family:monospace;pointer-events:none;user-select:none;letter-spacing:0.04em;">made by affrido10</div>
-  <main class="min-h-screen flex flex-col items-center justify-start relative z-10">
-    <section class="search-container w-full flex flex-col gap-2">
-      <div class="search-row flex items-center gap-2 mb-2">
-        <form id="searchForm" class="relative flex-1 min-w-0" autocomplete="off" spellcheck="false">
-          <input id="searchInput" class="search-input pr-12 w-full min-w-0" type="text" placeholder="Введи номер билета или ключевое слово..." aria-label="Поиск билета" autofocus />
-          <button type="submit" class="search-btn" aria-label="Найти"><i class="fas fa-search"></i></button>
-        </form>
+  <div class="watermark" aria-hidden="true">wassaup ma boy</div>
+  <main class="main-container">
+    <header class="header">
+      <h1>Экзаменационные билеты</h1>
+      <div class="search-row">
+        <input id="searchInput" class="search-input" type="text" placeholder="Поиск по номеру или ключевым словам..." />
+        <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i></button>
       </div>
-      <div class="section-btns flex gap-2 mt-2 mb-1 justify-center">
-        <button id="practiceBtn" class="px-4 py-2 rounded-lg bg-indigo-800 text-white font-semibold shadow hover:bg-indigo-900 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-flask mr-1"></i>Практика</button>
-        <button id="backToTicketsBtn" class="px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold shadow hover:bg-gray-800 transition text-sm whitespace-nowrap hidden" type="button"><i class="fas fa-arrow-left mr-1"></i>К билетам</button>
-        <button id="rangeBtn" class="px-4 py-2 rounded-lg bg-amber-700 text-white font-semibold shadow hover:bg-amber-800 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-list-ol mr-1"></i>35-50</button>
-        <button id="hardBtn" class="px-4 py-2 rounded-lg bg-rose-700 text-white font-semibold shadow hover:bg-rose-800 transition text-sm whitespace-nowrap" type="button"><i class="fas fa-brain mr-1"></i>Сложные 1-7</button>
+      <div class="section-btns">
+        <button id="ticketsSection" class="section-btn active">Билеты</button>
+        <button id="practiceSection" class="section-btn">Практика</button>
+        <button id="answersSection" class="section-btn">35-50</button>
+        <button id="hardSection" class="section-btn">Сложные 1-7</button>
+        <select id="filterType" class="filter-select">
+          <option value="all">Всё</option>
+          <option value="theory">Только теория</option>
+          <option value="practice">Только практика</option>
+        </select>
       </div>
-      <div id="searchStats" class="mt-2 text-xs text-indigo-200"></div>
-      <div class="flex flex-col items-center mt-2">
-        <!-- Подсказки убраны по просьбе пользователя -->
+    </header>
+    <section id="resultsSection" class="results-list"></section>
+    <div id="modalOverlay" class="modal-overlay">
+      <div class="modal-dialog">
+        <button id="modalCloseBtn" class="modal-close"><i class="fas fa-times"></i></button>
+        <div id="modalContent" class="modal-content"></div>
       </div>
-    </section>
-    <section class="results-list w-full px-2" id="resultsSection">
-      <div id="skeletonList"></div>
-      <div id="resultsContainer"></div>
-      <div id="noResults" class="text-center text-gray-400 mt-8 hidden">Ничего не найдено</div>
-    </section>
-    <button id="showAllBtn" class="mt-4 mb-8 px-6 py-2 rounded-lg bg-indigo-700 text-white font-semibold shadow hover:bg-indigo-800 transition hidden">Показать все билеты</button>
-    <div class="fixed bottom-4 right-4 z-50">
-      <button id="easterEggBtn" class="bg-yellow-400 text-gray-900 rounded-full shadow-lg px-4 py-2 font-bold text-sm hover:bg-yellow-300 transition"><i class="fas fa-cat mr-1"></i>Котик для удачи</button>
     </div>
   </main>
-  <div class="modal-overlay" id="modalOverlay" tabindex="-1" aria-modal="true" role="dialog">
-    <div class="modal-dialog" id="modalDialog">
-      <button class="modal-close" id="modalCloseBtn" aria-label="Закрыть"><i class="fas fa-times"></i></button>
-      <div id="modalContent"></div>
-    </div>
-  </div>
-  <div id="audioHint" class="fixed bottom-20 right-4 bg-indigo-900 text-white rounded-lg shadow-lg px-4 py-2 text-xs z-50 hidden">Говори медленно и чётко, не спеши — твой друг всё услышит!</div>
+  <style>
+    html, body { height: 100%; min-height: 100%; }
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, #18181b 0%, #232046 100%);
+      overflow-x: hidden;
+    }
+    .watermark {
+      position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+      z-index: 0; pointer-events: none; user-select: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10vw; font-weight: 900; color: #232046; opacity: 0.10;
+      text-align: center; letter-spacing: 0.05em; line-height: 1.1;
+      transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .main-container { position: relative; z-index: 1; min-height: 100vh; }
+    .header { max-width: 700px; margin: 0 auto; padding: 2rem 1rem 1rem 1rem; }
+    .header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 1.2rem; text-align: center; }
+    .search-row { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+    .search-input { flex: 1; border-radius: 0.75rem; border: none; padding: 1rem 1.1rem; font-size: 1.1rem; background: #23232b; color: #f3f4f6; font-weight: 500; outline: none; }
+    .search-btn { background: #6366f1; color: #fff; border: none; border-radius: 9999px; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .section-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1.2rem; }
+    .section-btn { padding: 0.6rem 1.2rem; border-radius: 0.7rem; font-weight: 600; border: none; background: #232046; color: #fff; cursor: pointer; transition: background 0.2s; }
+    .section-btn.active, .section-btn:hover { background: #6366f1; color: #fff; }
+    .filter-select { border-radius: 0.5rem; padding: 0.4rem 0.8rem; font-size: 1rem; margin-left: 1rem; }
+    .results-list { max-width: 700px; margin: 0 auto; padding: 0 1rem 2rem 1rem; }
+    .ticket-card { background: #23232b; color: #e5e7eb; border-radius: 1.1rem; border: 1.5px solid #2d2d36; margin-bottom: 1.2rem; box-shadow: 0 4px 16px 0 rgba(36,32,70,0.10); transition: box-shadow 0.25s, transform 0.18s; overflow: hidden; position: relative; }
+    .ticket-card:hover { box-shadow: 0 10px 32px 0 rgba(36,32,70,0.18); transform: translateY(-4px) scale(1.012); }
+    .ticket-card .read-btn { color: #818cf8; background: none; border: none; font-weight: 500; cursor: pointer; font-size: 1rem; transition: color 0.18s; }
+    .ticket-card .read-btn:hover { color: #a5b4fc; }
+    .modal-overlay { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(24,24,27,0.82); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-dialog { background: #23232b; color: #e5e7eb; border-radius: 1.2rem; max-width: 520px; width: 96vw; padding: 2.2rem 1.5rem 1.5rem 1.5rem; box-shadow: 0 8px 48px 0 rgba(36,32,70,0.22); position: relative; animation: fade-in 0.32s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; }
+    .modal-close { position: absolute; right: 1.1rem; top: 1.1rem; background: none; border: none; color: #a1a1aa; font-size: 1.5rem; cursor: pointer; transition: color 0.18s; }
+    .modal-close:hover { color: #fff; }
+    .modal-content { max-height: 60vh; overflow-y: auto; }
+    .modal-content::-webkit-scrollbar { width: 8px; background: transparent; }
+    .modal-content::-webkit-scrollbar-thumb { background: linear-gradient(120deg, #818cf8 40%, #6366f1 100%); border-radius: 8px; min-height: 32px; }
+    .modal-content { scrollbar-width: thin; scrollbar-color: #818cf8 #232046; }
+    @media (max-width: 640px) {
+      .header { padding: 1.1rem 0.5rem 1rem 0.5rem; }
+      .modal-dialog { padding: 1.2rem 0.5rem 1rem 0.5rem; max-height: 92vh; }
+      .results-list { padding-left: 0.1rem; padding-right: 0.1rem; }
+      .modal-dialog { width: 99vw; }
+      .search-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      .search-input { min-width: 0; width: 100%; font-size: 1.05rem; padding-right: 3.2rem; }
+      .search-btn { right: 0.5rem; }
+      .section-btns { flex-wrap: wrap; gap: 0.5rem; }
+    }
+    @media (max-width: 400px) {
+      .modal-dialog { padding: 0.5rem 0.1rem 0.5rem 0.1rem; }
+    }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
+  </style>
   <script>
-    // --- Динамический фон ---
-    const gradA1 = [24,24,27], gradA2 = [36,32,70], gradB1 = [30,32,40], gradB2 = [43,47,94];
-    function lerpColor(a, b, t) {
-      return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)];
-    }
-    function rgbToStr(rgb) { return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`; }
-    function updateBg() {
-      const maxScroll = Math.max(1, document.body.scrollHeight-window.innerHeight);
-      const t = Math.min(1, window.scrollY/maxScroll);
-      const c1 = lerpColor(gradA1, gradB1, t), c2 = lerpColor(gradA2, gradB2, t);
-      document.body.style.background = `linear-gradient(135deg, ${rgbToStr(c1)} 0%, ${rgbToStr(c2)} 100%)`;
-    }
-    window.addEventListener('scroll', updateBg);
-    updateBg();
-    // --- Watermark parallax ---
+    // --- Parallax ---
     window.addEventListener('scroll',()=>{
       const wm = document.querySelector('.watermark');
       if(wm) wm.style.transform = `translateY(${window.scrollY*0.18}px) scale(${1+Math.min(0.04,window.scrollY/4000)})`;
     });
-    // --- State & Elements ---
-    let ticketsData = [], practiceData = [], answersData = [], hardData = [], isPracticeMode = false, isRangeMode = false, isHardMode = false, isDictateMode = false, dictateIndex = 0, dictateList = [];
-    const el = id => document.getElementById(id);
-    const [searchInput, searchForm, resultsContainer, skeletonList, noResults, showAllBtn, modalOverlay, modalContent, modalCloseBtn, searchStats, practiceBtn, backToTicketsBtn, rangeBtn, hardBtn] = [
-      'searchInput','searchForm','resultsContainer','skeletonList','noResults','showAllBtn','modalOverlay','modalContent','modalCloseBtn','searchStats','practiceBtn','backToTicketsBtn','rangeBtn','hardBtn'
-    ].map(el);
-
-    // --- Utils ---
-    const highlight = (text, query) => !query ? text : text.replace(new RegExp('('+query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').split(/\s+/).filter(Boolean).join('|')+')','gi'), '<mark style="background:#fde68a;color:#92400e;border-radius:0.3em;padding:0 2px;">$1</mark>');
-    const showSkeleton = (n=6) => { skeletonList.innerHTML = '<div class="skeleton"></div>'.repeat(n); };
-    const hideSkeleton = () => skeletonList.innerHTML = '';
-    const updateStats = (found, total) => searchStats.textContent = found ? `Найдено: ${found} из ${total}` : '';
-    const closeModal = () => { modalOverlay.classList.remove('active'); modalContent.innerHTML = ''; document.body.style.overflow = ''; };
-    const openModal = html => { modalContent.innerHTML = html; modalOverlay.classList.add('active'); setTimeout(()=>modalContent.focus?.(),10); document.body.style.overflow = 'hidden'; };
-
-    // --- Render ---
-    function renderList(list, query, isPractice, isAnswers) {
-      console.log('renderList вызван:', {list, query, isPractice, isAnswers});
-      resultsContainer.innerHTML = '';
-      if (!list.length) {
-        noResults.innerHTML = `<div class="flex flex-col items-center justify-center"><img src="ticket.jpg" alt="Ticket" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;max-height:260px;"><div class="text-lg font-bold mb-2">${isPractice?'Практика не найдена!':isAnswers?'Ответы не найдены!':'Билет не найден!'}</div><div class="text-base text-center">${isPractice?'Нет заданий для практики 🎟️':isAnswers?'Нет подробных ответов':'НЕМА ТАКОГО НЕЕЕЕМААААА 🎟️'}</div></div>`;
-        noResults.classList.remove('hidden');
-        return;
-      }
-      noResults.classList.add('hidden');
-      list.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'ticket-card p-5';
-        if (isAnswers) {
-          card.innerHTML = `
-            <div class="flex justify-between items-start mb-2">
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${highlight(item["билет"], query)}</span>
-            </div>
-            <h4 class="text-lg font-semibold mb-2">${item["вопросы"].map(q=>highlight(q,query)).join('<br>')}</h4>
-            <p class="text-gray-400 text-sm mb-2"><b>Теория:</b> ${highlight(item["теория"]||'', query)}</p>
-            <p class="text-gray-400 text-sm mb-3"><b>Практика:</b> ${highlight(item["практика"]||'', query)}</p>
-            <div class="flex justify-end items-center">
-              <button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button>
-            </div>`;
-          card.querySelector('.read-btn').onclick = () => openModal(
-            `<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${item["билет"]}</span></div>
-            <h4 class="text-lg font-bold mb-3">${item["вопросы"].map(q=>highlight(q,query)).join('<br>')}</h4>
-            <div class="text-base mb-4 whitespace-pre-line"><b>Теория:</b><br>${highlight(item["теория"]||'', query)}</div>
-            <div class="text-base mb-6 whitespace-pre-line"><b>Практика:</b><br>${highlight(item["практика"]||'', query)}</div>`
-          );
-        } else if (isPractice) {
-          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${highlight(item["билет"], query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item["практика"], query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item["инструкция"]||'').replace(/\n/g,' ').replace(/\*\*.*?\*\*/g,''), query).substring(0,120)}...</p><div class="flex justify-end items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Подробнее</button></div>`;
-          card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${item["билет"]}</span></div><h4 class="text-lg font-bold mb-3">${item["практика"]}</h4><div class="text-base mb-6 whitespace-pre-line">${item["инструкция"]}</div>`);
-        } else {
-          card.innerHTML = `<div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Билет ${highlight(item["id"], query)}</span></div><h4 class="text-lg font-semibold mb-2">${highlight(item["Вопрос"], query)}</h4><p class="text-gray-400 text-sm mb-3">${highlight((item["Ответ"]||'').substring(0,100), query)}...</p><div class="flex justify-between items-center"><button class="read-btn" tabindex="0"><i class="fas fa-book-open mr-1"></i> Читать</button></div>`;
-          card.querySelector('.read-btn').onclick = () => openModal(`<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Билет ${item["id"]}</span></div><h4 class="text-lg font-bold mb-3">${item["Вопрос"]}</h4><div class="text-base mb-6 whitespace-pre-line">${item["Ответ"]}</div>`);
-        }
-        resultsContainer.appendChild(card);
-      });
-    }
-
-    // --- Data Loaders ---
-    const parseTickets = raw => Array.isArray(raw) ? raw.map((t,i) => ({
-      id: String(t.id || i+1),
-      Вопрос: t.Вопрос || t.question || '',
-      Ответ: t.Ответ || t.answer || ''
-    })) : [];
-    const parsePractice = raw => Array.isArray(raw) ? raw.map((p,i) => ({
-      билет: String(p.билет || i+1),
-      практика: p.практика || '',
-      инструкция: p.инструкция || ''
-    })) : [];
+    // --- Data ---
+    let ticketsData = [], practiceData = [], answersData = [], hardData = [];
+    let currentSection = 'tickets';
+    let filterType = 'all';
+    // --- Load JSON ---
+    async function loadJSON(url) { const r = await fetch(url); return r.json(); }
     async function loadAll() {
-      showSkeleton();
-      try {
-        const [tickets, practice, answers, hard] = await Promise.all([
-          loadJSON('./tickets.json').then(parseTickets),
-          loadJSON('./practice.json').then(parsePractice),
-          loadJSON('./answers.json'),
-          loadJSON('./hard.json')
-        ]);
-        ticketsData = tickets || [];
-        practiceData = practice || [];
-        answersData = Array.isArray(answers) ? answers : [];
-        hardData = Array.isArray(hard) ? hard : [];
-        console.log('Загрузка завершена:');
-        console.log('ticketsData:', ticketsData);
-        console.log('practiceData:', practiceData);
-        console.log('answersData:', answersData);
-        console.log('hardData:', hardData);
-      } catch (e) {
-        console.error('Ошибка загрузки:', e);
-        ticketsData = [];
-        practiceData = [];
-        answersData = [];
-        hardData = [];
-      }
-      hideSkeleton();
-      showAllBtn.classList.remove('hidden');
-      updateStats(0, ticketsData.length + practiceData.length + answersData.length + hardData.length);
+      [ticketsData, practiceData, answersData, hardData] = await Promise.all([
+        loadJSON('tickets.json').then(parseTickets),
+        loadJSON('practice.json').then(parsePractice),
+        loadJSON('answers.json'),
+        loadJSON('hard.json')
+      ]);
+      renderResults();
     }
-
+    // --- Section Switch ---
+    document.getElementById('ticketsSection').onclick = () => { currentSection = 'tickets'; setActiveSection(); renderResults(); };
+    document.getElementById('practiceSection').onclick = () => { currentSection = 'practice'; setActiveSection(); renderResults(); };
+    document.getElementById('answersSection').onclick = () => { currentSection = 'answers'; setActiveSection(); renderResults(); };
+    document.getElementById('hardSection').onclick = () => { currentSection = 'hard'; setActiveSection(); renderResults(); };
+    document.getElementById('filterType').onchange = e => { filterType = e.target.value; renderResults(); };
+    function setActiveSection() {
+      document.querySelectorAll('.section-btn').forEach(btn=>btn.classList.remove('active'));
+      document.getElementById(currentSection+'Section').classList.add('active');
+    }
     // --- Search ---
-    function doSearch(query) {
-      resultsContainer.innerHTML = '';
-      noResults.classList.add('hidden');
-      if (!query || !query.trim()) {
-        showAllBtn.classList.remove('hidden');
-        updateStats(0, ticketsData.length + practiceData.length + answersData.length + hardData.length);
+    document.getElementById('searchBtn').onclick = () => renderResults();
+    document.getElementById('searchInput').oninput = e => renderResults();
+    function renderResults() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      let list = [];
+      if(currentSection==='tickets') list = ticketsData;
+      if(currentSection==='practice') list = practiceData;
+      if(currentSection==='answers') list = answersData;
+      if(currentSection==='hard') list = hardData;
+      // Фильтрация по поиску
+      if(q) {
+        if(currentSection==='tickets') list = list.filter(t => t.id===q || t.Вопрос.toLowerCase().includes(q) || t.Ответ.toLowerCase().includes(q));
+        if(currentSection==='practice') list = list.filter(p => p.билет===q || p.практика?.toLowerCase().includes(q) || p.инструкция?.toLowerCase().includes(q));
+        if(currentSection==='answers') list = list.filter(a => String(a.билет)===q || a.вопросы?.some(v=>v.toLowerCase().includes(q)) || a.теория?.toLowerCase().includes(q) || a.практика?.toLowerCase().includes(q));
+        if(currentSection==='hard') list = list.filter(h => h.билет?.toLowerCase().includes(q) || h.вопросы?.some(v=>v.toLowerCase().includes(q)) || h.теория?.toLowerCase().includes(q) || h.практика?.toLowerCase().includes(q));
+      }
+      // Фильтр по типу
+      if(filterType==='theory') {
+        if(currentSection==='answers'||currentSection==='hard') list = list.filter(x=>x.теория);
+        if(currentSection==='tickets') list = list.filter(x=>x.Вопрос||x.Ответ);
+        if(currentSection==='practice') list = [];
+      }
+      if(filterType==='practice') {
+        if(currentSection==='answers'||currentSection==='hard') list = list.filter(x=>x.практика);
+        if(currentSection==='practice') list = list.filter(x=>x.инструкция);
+        if(currentSection==='tickets') list = [];
+      }
+      renderList(list);
+    }
+    // --- Render List ---
+    function renderList(list) {
+      const results = document.getElementById('resultsSection');
+      results.innerHTML = '';
+      if(!list.length) {
+        results.innerHTML = '<div class="text-center text-gray-400 mt-8">Ничего не найдено</div>';
         return;
       }
-      showAllBtn.classList.add('hidden');
-      showSkeleton();
-      setTimeout(() => {
-        const q = query.trim().toLowerCase();
-        let found = 0;
-        let res = [];
-        if (isPracticeMode) {
-          res = practiceData.filter(p =>
-            p.билет.toLowerCase() === q ||
-            p.практика.toLowerCase().includes(q) ||
-            p.инструкция.toLowerCase().includes(q)
-          );
-          hideSkeleton();
-          found = res.length;
-          renderList(res, query, true, false);
-        } else if (isRangeMode) {
-          res = answersData.filter(a =>
-            String(a.билет).toLowerCase() === q ||
-            (Array.isArray(a.вопросы) && a.вопросы.some(v=>v.toLowerCase().includes(q))) ||
-            (a.теория && a.теория.toLowerCase().includes(q)) ||
-            (a.практика && a.практика.toLowerCase().includes(q))
-          );
-          hideSkeleton();
-          found = res.length;
-          renderList(res, query, false, true);
-        } else if (isHardMode) {
-          res = hardData.filter(h =>
-            (h.билет && h.билет.toLowerCase().includes(q)) ||
-            (Array.isArray(h.вопросы) && h.вопросы.some(v=>v.toLowerCase().includes(q))) ||
-            (h.теория && h.теория.toLowerCase().includes(q)) ||
-            (h.практика && h.практика.toLowerCase().includes(q))
-          );
-          hideSkeleton();
-          found = res.length;
-          renderList(res, query, false, true);
-        } else {
-          res = ticketsData.filter(t =>
-            t.id.toLowerCase() === q ||
-            t.Вопрос.toLowerCase().includes(q) ||
-            t.Ответ.toLowerCase().includes(q)
-          );
-          hideSkeleton();
-          found = res.length;
-          renderList(res, query, false, false);
+      list.forEach(item => {
+        let html = '';
+        if(currentSection==='tickets') {
+          html = `<div class="ticket-card"><div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Билет ${item.id}</span></div><h4 class="text-lg font-semibold mb-2">${item.Вопрос}</h4><p class="text-gray-400 text-sm mb-3">${item.Ответ.substring(0,100)}...</p><div class="flex justify-end items-center"><button class="read-btn">Читать</button></div></div>`;
+        } else if(currentSection==='practice') {
+          html = `<div class="ticket-card"><div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${item.билет||''}</span></div><h4 class="text-lg font-semibold mb-2">${item.практика||''}</h4><p class="text-gray-400 text-sm mb-3">${(item.инструкция||'').substring(0,100)}...</p><div class="flex justify-end items-center"><button class="read-btn">Подробнее</button></div></div>`;
+        } else if(currentSection==='answers') {
+          html = `<div class="ticket-card"><div class="flex justify-between items-start mb-2"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${item.билет}</span></div><h4 class="text-lg font-semibold mb-2">${item.вопросы?.join('<br>')}</h4><p class="text-gray-400 text-sm mb-3"><b>Теория:</b> ${(item.теория||'').substring(0,100)}...</p><div class="flex justify-end items-center"><button class="read-btn">Подробнее</button></div></div>`;
+        } else if(currentSection==='hard') {
+          html = `<div class="ticket-card"><div class="flex justify-between items-start mb-2"><span class="bg-rose-100 text-rose-800 text-xs font-medium px-2.5 py-0.5 rounded">${item.билет}</span></div><h4 class="text-lg font-semibold mb-2">${item.вопросы?.join('<br>')}</h4><p class="text-gray-400 text-sm mb-3"><b>Теория:</b> ${(item.теория||'').substring(0,100)}...</p><div class="flex justify-end items-center"><button class="read-btn">Подробнее</button></div></div>`;
         }
-        if (!found) {
-          renderList([], query, isPracticeMode, isRangeMode || isHardMode);
-        }
-        let total = isPracticeMode ? practiceData.length : isRangeMode ? answersData.length : isHardMode ? hardData.length : ticketsData.length;
-        updateStats(found, total);
-      }, 100);
-    }
-
-    // --- Practice Mode ---
-    practiceBtn.onclick = () => {
-      isPracticeMode = true;
-      searchForm.classList.add('hidden');
-      practiceBtn.classList.add('hidden');
-      rangeBtn.classList.add('hidden');
-      backToTicketsBtn.classList.remove('hidden');
-      showAllBtn.classList.add('hidden');
-      noResults.classList.add('hidden');
-      resultsContainer.innerHTML = '';
-      showSkeleton();
-      setTimeout(()=>{
-        hideSkeleton();
-        renderList(practiceData, '', true);
-        updateStats(practiceData.length, practiceData.length);
-      }, 200);
-    };
-    // --- Раздел 35-50 ---
-    rangeBtn.onclick = () => {
-      isRangeMode = true;
-      searchForm.classList.add('hidden');
-      practiceBtn.classList.add('hidden');
-      rangeBtn.classList.add('hidden');
-      backToTicketsBtn.classList.remove('hidden');
-      showAllBtn.classList.add('hidden');
-      noResults.classList.add('hidden');
-      resultsContainer.innerHTML = '';
-      showSkeleton();
-      setTimeout(()=>{
-        hideSkeleton();
-        renderList(answersData, '', false, true);
-        updateStats(answersData.length, answersData.length);
-      }, 200);
-    };
-    hardBtn.onclick = () => {
-      isHardMode = true;
-      searchForm.classList.add('hidden');
-      practiceBtn.classList.add('hidden');
-      rangeBtn.classList.add('hidden');
-      hardBtn.classList.add('hidden');
-      backToTicketsBtn.classList.remove('hidden');
-      showAllBtn.classList.add('hidden');
-      noResults.classList.add('hidden');
-      resultsContainer.innerHTML = '';
-      showSkeleton();
-      setTimeout(()=>{
-        hideSkeleton();
-        renderList(hardData, '', false, true);
-        updateStats(hardData.length, hardData.length);
-      }, 200);
-    };
-    backToTicketsBtn.onclick = () => {
-      if(isPracticeMode || isRangeMode || isHardMode) {
-        isPracticeMode = false;
-        isRangeMode = false;
-        isHardMode = false;
-        searchForm.classList.remove('hidden');
-        practiceBtn.classList.remove('hidden');
-        rangeBtn.classList.remove('hidden');
-        hardBtn.classList.remove('hidden');
-        backToTicketsBtn.classList.add('hidden');
-        resultsContainer.innerHTML = '';
-        noResults.classList.add('hidden');
-        showAllBtn.classList.remove('hidden');
-        updateStats(0, ticketsData.length);
-        return;
-      }
-    };
-    showAllBtn.onclick = () => {
-      renderList(ticketsData, '', false);
-      showAllBtn.classList.add('hidden');
-      updateStats(ticketsData.length, ticketsData.length);
-    };
-
-    // --- Modal events ---
-    modalCloseBtn.onclick = closeModal;
-    modalOverlay.onclick = e => { if(e.target===modalOverlay) closeModal(); };
-    document.addEventListener('keydown',e=>{
-      if(modalOverlay.classList.contains('active')&&(e.key==='Escape'||e.key==='Esc')) closeModal();
-    });
-
-    // --- Search events ---
-    searchForm.onsubmit = e => { if(isPracticeMode) return; e.preventDefault(); doSearch(searchInput.value.trim()); };
-    searchInput.oninput = () => { if(isPracticeMode) return; doSearch(searchInput.value.trim()); };
-
-    // --- Easter Egg ---
-    const easterEggBtn = document.getElementById('easterEggBtn');
-    easterEggBtn.onclick = () => {
-      openModal('<div class="flex flex-col items-center"><img src="https://cataas.com/cat/says/Удачи%20на%20экзамене!" alt="Котик" style="max-width:220px;border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;"><div class="text-lg font-bold mb-2">Котик желает удачи!</div><div class="text-base text-center">сак ма болс тупая дура П.С.А.</div></div>');
-    };
-    // --- Audio Hint ---
-    let audioHintTimeout;
-    function showAudioHint() {
-      const hint = document.getElementById('audioHint');
-      hint.classList.remove('hidden');
-      clearTimeout(audioHintTimeout);
-      audioHintTimeout = setTimeout(()=>hint.classList.add('hidden'), 5000);
-    }
-    // Показывать подсказку при открытии любого ответа
-    const origOpenModal = openModal;
-    openModal = function(html) {
-      origOpenModal(`<div class="mb-4 p-3 rounded-lg bg-amber-100 text-amber-900 text-base font-semibold flex items-center gap-2"><i class="fas fa-microphone-alt"></i> Говори медленно, не спеши, повторяй номер билета!</div>`+html);
-    };
-
-    // --- Dictate Mode ---
-    const dictateBtn = document.createElement('button');
-    dictateBtn.id = 'dictateBtn';
-    dictateBtn.className = 'fixed bottom-6 right-6 z-40 px-6 py-3 rounded-full bg-indigo-700 text-white font-bold text-lg shadow-lg hover:bg-indigo-800 transition hidden';
-    dictateBtn.innerHTML = '<i class="fas fa-headset mr-2"></i>Диктовать';
-    document.body.appendChild(dictateBtn);
-
-    const tipsBtn = document.createElement('button');
-    tipsBtn.id = 'tipsBtn';
-    tipsBtn.className = 'fixed bottom-6 left-6 z-40 px-5 py-2 rounded-full bg-amber-700 text-white font-semibold shadow-lg hover:bg-amber-800 transition text-base';
-    tipsBtn.innerHTML = '<i class="fas fa-lightbulb mr-2"></i>Советы';
-    document.body.appendChild(tipsBtn);
-
-    function openDictateMode(list, idx) {
-      isDictateMode = true;
-      dictateList = list;
-      dictateIndex = idx;
-      document.body.style.overflow = 'hidden';
-      renderDictateCard();
-    }
-    function closeDictateMode() {
-      isDictateMode = false;
-      dictateList = [];
-      dictateIndex = 0;
-      document.body.style.overflow = '';
-      document.getElementById('dictateOverlay')?.remove();
-    }
-    function renderDictateCard() {
-      let item = dictateList[dictateIndex];
-      if (!item) return closeDictateMode();
-      let overlay = document.getElementById('dictateOverlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'dictateOverlay';
-        overlay.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90';
-        overlay.tabIndex = -1;
-        document.body.appendChild(overlay);
-      }
-      overlay.innerHTML = `
-        <div class="flex flex-col items-center justify-center w-full max-w-xl mx-auto p-6">
-          <div class="text-2xl font-bold text-indigo-300 mb-2">Билет ${item["id"]||item["билет"]||dictateIndex+1}</div>
-          <div class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-6 text-center" style="letter-spacing:0.01em;line-height:1.3;">${item["Вопрос"]||item["практика"]||item["вопросы"]?.join('<br>')||''}</div>
-          <div class="text-xl sm:text-2xl font-semibold text-amber-200 mb-8 text-center whitespace-pre-line" style="word-break:break-word;">${item["Ответ"]||item["инструкция"]||item["теория"]||item["практика"]||''}</div>
-          <div class="mb-6 w-full max-w-md mx-auto bg-indigo-900 bg-opacity-60 rounded-lg p-4 text-base text-indigo-100 flex flex-col gap-2">
-            <div><i class="fas fa-microphone-alt mr-2"></i><b>Говори медленно и чётко.</b></div>
-            <div><i class="fas fa-hashtag mr-2"></i>Повтори <b>номер билета</b> перед ответом.</div>
-            <div><i class="fas fa-user-check mr-2"></i>Паузы между фразами, спрашивай: "Всё понял?"</div>
-            <div><i class="fas fa-clock mr-2"></i>Следи за временем, не спеши.</div>
-          </div>
-          <div class="flex gap-4 mt-4">
-            <button class="px-5 py-2 rounded-lg bg-gray-700 text-white font-semibold shadow hover:bg-gray-800 transition text-base" id="dictatePrev"><i class="fas fa-arrow-left mr-1"></i>Назад</button>
-            <button class="px-5 py-2 rounded-lg bg-indigo-700 text-white font-bold shadow hover:bg-indigo-800 transition text-base" id="dictateNext">Далее<i class="fas fa-arrow-right ml-1"></i></button>
-            <button class="px-5 py-2 rounded-lg bg-rose-700 text-white font-semibold shadow hover:bg-rose-800 transition text-base" id="dictateClose"><i class="fas fa-times mr-1"></i>Выйти</button>
-          </div>
-        </div>
-      `;
-      overlay.focus();
-      document.getElementById('dictatePrev').onclick = () => { if(dictateIndex>0) {dictateIndex--; renderDictateCard();} };
-      document.getElementById('dictateNext').onclick = () => { if(dictateIndex<dictateList.length-1) {dictateIndex++; renderDictateCard();} };
-      document.getElementById('dictateClose').onclick = closeDictateMode;
-    }
-    // --- Hotkeys for Dictate Mode ---
-    document.addEventListener('keydown', e => {
-      if (!isDictateMode) return;
-      if (e.key === 'ArrowLeft') { if(dictateIndex>0) {dictateIndex--; renderDictateCard();} }
-      if (e.key === 'ArrowRight') { if(dictateIndex<dictateList.length-1) {dictateIndex++; renderDictateCard();} }
-      if (e.key === 'Escape') closeDictateMode();
-    });
-    window.addEventListener('beforeunload', e => {
-      if (isDictateMode) {
-        e.preventDefault();
-        e.returnValue = 'Вы уверены, что хотите выйти из режима диктовки?';
-        return 'Вы уверены, что хотите выйти из режима диктовки?';
-      }
-    });
-    // --- Tips Modal ---
-    const tipsModal = document.createElement('div');
-    tipsModal.id = 'tipsModal';
-    tipsModal.className = 'modal-overlay';
-    tipsModal.innerHTML = `<div class="modal-dialog"><button class="modal-close" id="tipsCloseBtn" aria-label="Закрыть"><i class="fas fa-times"></i></button><div id="tipsContent" class="text-base text-indigo-100"><h3 class="text-lg font-bold mb-3">Советы для помощника</h3><ul class="list-disc pl-5 mb-3"><li>Проверь связь заранее</li><li>Говори медленно и чётко, делай паузы</li><li>Повторяй номер билета перед ответом</li><li>Следи за временем, не спеши</li><li>Если что — повтори, спроси "Всё понял?"</li><li>Не паникуй, поддержи друга!</li></ul><div class="text-xs text-gray-400">Удачи на экзамене! Ты лучший друг 😎</div></div></div>`;
-    document.body.appendChild(tipsModal);
-    document.getElementById('tipsCloseBtn').onclick = ()=>tipsModal.classList.remove('active');
-    tipsBtn.onclick = ()=>tipsModal.classList.add('active');
-    // --- Patch renderList: добавить кнопку 'Диктовать' ---
-    const origRenderList = renderList;
-    renderList = function(list, query, isPractice, isAnswers) {
-      origRenderList(list, query, isPractice, isAnswers);
-      // Если найден ровно один билет — сразу открыть диктовку
-      if (list.length === 1 && !isAnswers) {
-        setTimeout(()=>openDictateMode(list,0), 350);
-      }
-      // Добавить кнопку диктовки для каждого билета
-      Array.from(document.querySelectorAll('.ticket-card')).forEach((card, idx) => {
-        if (isAnswers) return;
-        let btn = document.createElement('button');
-        btn.className = 'ml-2 px-3 py-1 rounded bg-indigo-700 text-white text-sm font-semibold shadow hover:bg-indigo-800 transition';
-        btn.innerHTML = '<i class="fas fa-headset mr-1"></i>Диктовать';
-        btn.onclick = () => openDictateMode(list, idx);
-        let actions = card.querySelector('.flex.justify-between,.flex.justify-end');
-        if (actions) actions.appendChild(btn);
+        const card = document.createElement('div');
+        card.innerHTML = html;
+        card.className = 'ticket-card-wrapper';
+        card.querySelector('.read-btn').onclick = () => openModal(item);
+        results.appendChild(card);
       });
-      dictateBtn.classList.toggle('hidden', !list.length || isAnswers);
-      dictateBtn.onclick = () => openDictateMode(list, 0);
-    };
-
-    // --- Всплывающая подсказка при открытии ответа ---
-    if (typeof window._origOpenModal === 'undefined') {
-      window._origOpenModal = openModal;
-      openModal = function(html) {
-        window._origOpenModal(`<div class="mb-4 p-3 rounded-lg bg-amber-100 text-amber-900 text-base font-semibold flex items-center gap-2"><i class="fas fa-microphone-alt"></i> Говори медленно, не спеши, повторяй номер билета!</div>`+html);
-      };
     }
-
-    // --- Улучшение адаптивности для диктовки ---
-    const style = document.createElement('style');
-    style.innerHTML = `
-    #dictateOverlay .text-2xl, #dictateOverlay .text-xl, #dictateOverlay .text-3xl, #dictateOverlay .text-4xl { font-size: min(7vw,2.2rem)!important; }
-    @media (max-width: 640px) {
-      #dictateOverlay .text-2xl, #dictateOverlay .text-xl, #dictateOverlay .text-3xl, #dictateOverlay .text-4xl { font-size: min(8vw,1.3rem)!important; }
-      #dictateOverlay .p-6 { padding: 0.5rem!important; }
+    // --- Modal ---
+    function openModal(item) {
+      const modal = document.getElementById('modalOverlay');
+      const content = document.getElementById('modalContent');
+      let html = '';
+      if(currentSection==='tickets') {
+        html = `<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Билет ${item.id}</span></div><h4 class="text-lg font-bold mb-3">${item.Вопрос}</h4><div class="text-base mb-6 whitespace-pre-line">${item.Ответ}</div>`;
+      } else if(currentSection==='practice') {
+        html = `<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Практика ${item.билет||''}</span></div><h4 class="text-lg font-bold mb-3">${item.практика||''}</h4><div class="text-base mb-6 whitespace-pre-line">${item.инструкция||''}</div>`;
+      } else if(currentSection==='answers') {
+        html = `<div class="mb-3"><span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Ответы ${item.билет}</span></div><h4 class="text-lg font-bold mb-3">${item.вопросы?.join('<br>')}</h4><div class="text-base mb-4 whitespace-pre-line"><b>Теория:</b><br>${item.теория||''}</div><div class="text-base mb-6 whitespace-pre-line"><b>Практика:</b><br>${item.практика||''}</div>`;
+      } else if(currentSection==='hard') {
+        html = `<div class="mb-3"><span class="bg-rose-100 text-rose-800 text-xs font-medium px-2.5 py-0.5 rounded">${item.билет}</span></div><h4 class="text-lg font-bold mb-3">${item.вопросы?.join('<br>')}</h4><div class="text-base mb-4 whitespace-pre-line"><b>Теория:</b><br>${item.теория||''}</div><div class="text-base mb-6 whitespace-pre-line"><b>Практика:</b><br>${item.практика||''}</div>`;
+      }
+      content.innerHTML = html;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
     }
-    `;
-    document.head.appendChild(style);
-
+    document.getElementById('modalCloseBtn').onclick = closeModal;
+    document.getElementById('modalOverlay').onclick = e => { if(e.target===document.getElementById('modalOverlay')) closeModal(); };
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
     // --- Init ---
     window.addEventListener('load', loadAll);
   </script>
