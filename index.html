@@ -521,7 +521,7 @@
       }
       overlay.innerHTML = `
         <div class="flex flex-col items-center justify-center w-full max-w-xl mx-auto p-6">
-          <div class="text-2xl font-bold text-indigo-300 mb-2">Билет ${item["№"]||item["билет"]||dictateIndex+1}</div>
+          <div class="text-2xl font-bold text-indigo-300 mb-2">Билет ${item["id"]||item["билет"]||dictateIndex+1}</div>
           <div class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-6 text-center" style="letter-spacing:0.01em;line-height:1.3;">${item["Вопрос"]||item["практика"]||item["вопросы"]?.join('<br>')||''}</div>
           <div class="text-xl sm:text-2xl font-semibold text-amber-200 mb-8 text-center whitespace-pre-line" style="word-break:break-word;">${item["Ответ"]||item["инструкция"]||item["теория"]||item["практика"]||''}</div>
           <div class="mb-6 w-full max-w-md mx-auto bg-indigo-900 bg-opacity-60 rounded-lg p-4 text-base text-indigo-100 flex flex-col gap-2">
