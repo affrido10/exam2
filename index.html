@@ -293,75 +293,74 @@
 
     // --- Search ---
     function doSearch(query) {
-      if (!ticketsData.length && !answersData.length && !practiceData.length && !hardData.length) return;
-      if (query && query.toLowerCase().includes('котик')) {
-        openModal(`<div class="flex flex-col items-center justify-center"><img src="https://cataas.com/cat/says/Мяу?width=320&height=220&fontSize=32" alt="Котик" style="border-radius:1rem;box-shadow:0 4px 24px #23204633;margin-bottom:1.2rem;max-width:90vw;"><div class="text-lg font-bold mb-2">Пасхалка!</div><div class="text-base text-center">Вот тебе котик для настроения 🐾</div></div>`);
-        searchInput.value = '';
-        return;
-      }
-      if (!query) {
-        resultsContainer.innerHTML = '';
-        noResults.classList.add('hidden');
+      // Очистка
+      resultsContainer.innerHTML = '';
+      noResults.classList.add('hidden');
+      if (!query || !query.trim()) {
         showAllBtn.classList.remove('hidden');
-        updateStats(0, ticketsData.length + (practiceData.length||0) + (answersData.length||0) + (hardData.length||0));
+        updateStats(0, ticketsData.length + practiceData.length + answersData.length + hardData.length);
         return;
       }
       showAllBtn.classList.add('hidden');
       showSkeleton();
-      setTimeout(()=>{
-        let resTickets = [], resPractice = [], resAnswers = [], resHard = [];
-        const numMatch = query.match(/(билет\s*)?(\d{1,3})/i);
-        if(numMatch) {
-          const num = numMatch[2];
-          resTickets = ticketsData.filter(t=>t.number.replace(/[^\d]/g,'')===num);
-          resPractice = practiceData.filter(p=>String(p["билет"])===num);
-          resAnswers = answersData.filter(a=>String(a["билет"])===num);
-          resHard = hardData.filter(h=>{
-            const n = String(h["билет"]).replace(/[^\d]/g,'')
-            return n === num;
-          });
-        }
-        if(!resTickets.length && !resPractice.length && !resAnswers.length && !resHard.length) {
-          const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-          resTickets = ticketsData.filter(t=>words.every(w=>(t.question+t.answer).toLowerCase().includes(w)));
-          resPractice = practiceData.filter(p=>words.every(w=>(p["практика"]+p["инструкция"]).toLowerCase().includes(w)));
-          resAnswers = answersData.filter(a=>words.some(w=>a["вопросы"].some(q=>q.toLowerCase().includes(w))||(a["теория"]||'').toLowerCase().includes(w)||(a["практика"]||'').toLowerCase().includes(w)));
-          resHard = hardData.filter(h=>words.some(w=>h["вопросы"].some(q=>q.toLowerCase().includes(w))||(h["теория"]||'').toLowerCase().includes(w)||(h["практика"]||'').toLowerCase().includes(w)));
-        }
+      setTimeout(() => {
+        const q = query.trim().toLowerCase();
+        let found = 0;
+        // --- Поиск по номеру билета ---
+        const numMatch = q.match(/(билет\s*)?(\d{1,3})/i);
+        let num = numMatch ? numMatch[2] : null;
+        // --- Поиск по всем разделам ---
+        let resTickets = ticketsData.filter(t => {
+          const n = (t.number||'').replace(/[^\d]/g,'');
+          return (num && n === num) || (t.question && t.question.toLowerCase().includes(q)) || (t.answer && t.answer.toLowerCase().includes(q));
+        });
+        let resPractice = practiceData.filter(p => {
+          const n = String(p["билет"]||'');
+          return (num && n === num) || (p["практика"] && p["практика"].toLowerCase().includes(q)) || (p["инструкция"] && p["инструкция"].toLowerCase().includes(q));
+        });
+        let resAnswers = answersData.filter(a => {
+          const n = String(a["билет"]||'');
+          return (num && n === num) || (a["вопросы"] && a["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (a["теория"] && a["теория"].toLowerCase().includes(q)) || (a["практика"] && a["практика"].toLowerCase().includes(q));
+        });
+        let resHard = hardData.filter(h => {
+          const n = String(h["билет"]||'').replace(/[^\d]/g,'');
+          return (num && n === num) || (h["вопросы"] && h["вопросы"].some(qs=>qs.toLowerCase().includes(q))) || (h["теория"] && h["теория"].toLowerCase().includes(q)) || (h["практика"] && h["практика"].toLowerCase().includes(q));
+        });
         hideSkeleton();
-        if(resTickets.length) {
+        found = resTickets.length + resPractice.length + resAnswers.length + resHard.length;
+        if (resTickets.length) {
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-2';
           header.textContent = 'Билеты';
           resultsContainer.appendChild(header);
           renderList(resTickets, query, false, false);
         }
-        if(resPractice.length) {
+        if (resPractice.length) {
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
           header.textContent = 'Практика';
           resultsContainer.appendChild(header);
           renderList(resPractice, query, true, false);
         }
-        if(resAnswers.length) {
+        if (resAnswers.length) {
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
           header.textContent = 'Ответы';
           resultsContainer.appendChild(header);
           renderList(resAnswers, query, false, true);
         }
-        if(resHard.length) {
+        if (resHard.length) {
           const header = document.createElement('div');
           header.className = 'text-indigo-300 text-base font-bold mb-2 mt-4';
           header.textContent = 'Сложные 1-7';
           resultsContainer.appendChild(header);
           renderList(resHard, query, false, true);
         }
-        if(!resTickets.length && !resPractice.length && !resAnswers.length && !resHard.length) {
+        if (!found) {
           renderList([], query, false, false);
         }
-        updateStats(resTickets.length+resPractice.length+resAnswers.length+resHard.length, ticketsData.length + (practiceData.length||0) + (answersData.length||0) + (hardData.length||0));
-      }, 300);
+        updateStats(found, ticketsData.length + practiceData.length + answersData.length + hardData.length);
+      }, 100);
     }
 
     // --- Practice Mode ---
